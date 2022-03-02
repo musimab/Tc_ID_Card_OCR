@@ -1,5 +1,10 @@
 # Usage
 
+## TODOs
+1. Unet model will be developed
+2. deep learning based (Yolo SSD Faster Rcnn) identity card recognition model will be deveeloped
+
+
 ## Algorithm Pipeline
 ![ocr_pipeline_eng_2](https://user-images.githubusercontent.com/47300390/156430579-8751f295-9ae5-46ca-a802-5094563983a3.jpg)
 
