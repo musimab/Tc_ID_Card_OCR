@@ -9,10 +9,10 @@
 ## Warped image
 ![final_img](https://user-images.githubusercontent.com/47300390/156431165-75a5fd88-d900-4909-ba90-a5075860daa9.png)
 
-## CRAFT Charakter Density Map
+## CRAFT Character Density Map
 ![res_final_img_mask](https://user-images.githubusercontent.com/47300390/156431651-c5a035ac-11b5-4018-94da-e9f6ba47829a.jpg)
 
-## Unet Output 
+## Unet Output for character density map
 ![res_final_img_mask_](https://user-images.githubusercontent.com/47300390/156431494-de2eef9f-cdae-49fa-be37-a71e1ad1112c.jpg)
 
 ## Craft Output
