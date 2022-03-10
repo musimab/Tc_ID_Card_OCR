@@ -2,21 +2,26 @@ import cv2
 from matplotlib import pyplot as plt
 import pytesseract
 import numpy as np
+from zmq import device
 import utlis
-
+from pytorch_unet import unet_predict
+import craft
+from craft_text_detector import Craft
 
 def ocrOutputs(img, bbox):
     
-    LowerThr = 7
-    UpperThr = 7
+    LowerThr = 5
+    UpperThr = 5
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     for box in bbox :
         x, w, y, h = box
         crop_img = img_rgb[y-LowerThr:y+h+UpperThr, x-LowerThr:x+w+UpperThr]
-        processed_img = utlis.denoiseImage(crop_img)
-        cv2.imshow("crop img", processed_img)
-        cv2.waitKey(0)
-        print(pytesseract.image_to_string(processed_img))
+        #processed_img = utlis.denoiseImage(crop_img)
+        
+        plt.title("OCR image")
+        plt.imshow(crop_img, cmap='gray')
+        plt.show()
+        print(pytesseract.image_to_string(crop_img))
 
 
 def getCenterRatios(img, centers):
@@ -39,10 +44,10 @@ def displayMachedBoxes(img, new_bboxes):
     
     for box in new_bboxes:
         x1, w, y1, h = box
-        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,0), 2)
+        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,255), 2)
         cX = round(int(x1) + w/2.0)
         cY = round(int(y1) + h/2.0)
-        cv2.circle(img, (cX, cY), 7, (0, 255, 0), -1)
+        cv2.circle(img, (cX, cY), 7, (0, 255, 255), -1)
         
     return img
 
@@ -90,10 +95,11 @@ def getCenterOfMasks(thresh):
         cX = round(int(x) + w/2.0)
         cY = round(int(y) + h/2.0)
         detected_centers.append((cX, cY))
-        cv2.circle(thresh, (cX, cY), 7, (0, 0, 0), -1)
+        cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
         if w > 10 and h > 10:
             cv2.rectangle(thresh, (x,y), (x+w,y+h), (255, 0, 0), 2)
-    
+    #plt.imshow(thresh, cmap='gray')
+    #plt.show()
     return np.array(detected_centers)
 
 
@@ -271,35 +277,64 @@ def changeOrientationUntilFaceFound(image):
     
     return rotated_img
 
+def getBoxRegions(regions):
+    boxes = []
+    centers = []
+    for box_region in regions:
+
+        x1,y1, x2, y2, x3, y3, x4, y4 = np.int0(box_region.reshape(-1))
+        x = min(x1, x3)
+        y = min(y1, y2)
+        w = abs(min(x1,x3) - max(x2, x4))
+        h = abs(min(y1,y2) - max(y3, y4))
+
+        cX = round(int(x) + w/2.0)
+        cY = round(int(y) + h/2.0)
+        centers.append((cX, cY))
+        bbox = (int(x), w, int(y), h)
+        boxes.append(bbox)
+
+    print("number of boxes", len(boxes))
+    return np.array(boxes), np.array(centers)
+
+def createHeatMapAndBoxCoordinates(image):
+    
+    input_image = image.copy()
+    craft = Craft(output_dir='outputs', crop_type="poly", cuda=True)
+    prediction_result = craft.detect_text(input_image)
+    heatmaps = prediction_result["heatmaps"]
+   
+    return heatmaps["text_score_heatmap"], prediction_result["boxes"]
+
+
 
 if '__main__' == __name__:
     
-    img1 = cv2.imread("images/id1.jpeg")
-    txt_path = "BoxCoordinates/res_final_img.txt"
+    img1 = cv2.imread("images/ori5.jpg")
     
     plt.title("Original image")
     plt.imshow(img1)
     plt.show()
     
-    img1 = changeOrientationUntilFaceFound(img1)
+    final_img = changeOrientationUntilFaceFound(img1)
     
-    final_img = utlis.correctPerspective(img1)
+    #final_img = utlis.correctPerspective(final_img)
     
-    bbox_coordinates , centers = utlis.readBBoxCordinatesAndCenters(txt_path)
-    
-    img1_mask = cv2.imread("mask/res_final_img_mask_.jpg")
-    
-    mask_gray = cv2.cvtColor(img1_mask, cv2.COLOR_BGR2GRAY)
-    
-    ret, binary_mask = cv2.threshold(mask_gray, 127, 255, cv2.THRESH_BINARY)
-    
-    detected_centers = getCenterOfMasks(binary_mask)
+    txt_heat_map, regions = createHeatMapAndBoxCoordinates(final_img)
+
+    predicted_mask = unet_predict.unet_segment_model(txt_heat_map)
+    plt.title("Predicted Mask")
+    plt.imshow(predicted_mask, cmap='gray')
+    plt.show()
+    bbox_coordinates , box_centers = getBoxRegions(regions)
+   
+    mask_centers = getCenterOfMasks(predicted_mask)
    
     # centers ratio for 4 boxes
-    centers_ratio_mask = getCenterRatios(binary_mask, detected_centers) 
-    
+    centers_ratio_mask = getCenterRatios(predicted_mask, mask_centers) 
+
     # centers ratio for all boxes
-    centers_ratio_all = getCenterRatios(final_img, centers) 
+    centers_ratio_all = getCenterRatios(final_img, box_centers) 
   
     matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
 
@@ -312,11 +347,11 @@ if '__main__' == __name__:
     #utlis.displayAllBoxes(final_img, bbox_coordinates)
     
     plt.figure()
-    plt.title("Target box")
+    plt.title("final_img")
     plt.imshow(final_img)
     plt.figure()
-    plt.title("Mask")
-    plt.imshow(binary_mask )
+    plt.title("Predicted Mask")
+    plt.imshow(predicted_mask, cmap='gray')
     #plt.figure()
     #plt.imshow(img_res)
     plt.show()

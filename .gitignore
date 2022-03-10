@@ -1,0 +1,9 @@
+*.pyc
+*.swp
+*.pkl
+*.pth
+result*
+model*
+output*
+craft*
+images*
