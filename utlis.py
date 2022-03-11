@@ -2,10 +2,21 @@ import cv2
 from matplotlib import pyplot as plt
 import pytesseract
 import numpy as np
+from craft_text_detector import Craft
+from math import atan2, cos, sin, sqrt, pi
 
 modelFile = "model/res10_300x300_ssd_iter_140000.caffemodel"
 configFile = "model/deploy.prototxt.txt"
 FaceNet = cv2.dnn.readNetFromCaffe(configFile, modelFile)
+
+def createHeatMapAndBoxCoordinates(image):
+    
+    input_image = image.copy()
+    craft = Craft(output_dir='outputs', crop_type="poly", cuda=True)
+    prediction_result = craft.detect_text(input_image)
+    heatmaps = prediction_result["heatmaps"]
+   
+    return heatmaps["text_score_heatmap"], prediction_result["boxes"]
 
 
 def readBBoxCordinatesAndCenters(coordinates_txt):
@@ -28,6 +39,65 @@ def readBBoxCordinatesAndCenters(coordinates_txt):
     print("number of boxes", len(boxes))
     return np.array(boxes), np.array(centers)
 
+
+def rotateImage(mask, final_img):
+    
+    cntrs ,hiarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    areas = [cv2.contourArea(c) for c in cntrs]
+    max_index = np.argmax(areas)
+    cnt = cntrs[max_index]
+   
+    angle_pca = getOrientation(cnt,mask)
+    print("angle pca:", angle_pca)
+    
+    (h, w) = final_img.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+
+    M = cv2.getRotationMatrix2D((cX, cY), angle_pca, 1.0)
+    
+    return cv2.warpAffine(final_img, M, (w, h))
+
+
+def drawAxis(img, p_, q_, colour, scale):
+    p = list(p_)
+    q = list(q_)
+    
+    angle = atan2(p[1] - q[1], p[0] - q[0]) # angle in radians
+    hypotenuse = sqrt((p[1] - q[1]) * (p[1] - q[1]) + (p[0] - q[0]) * (p[0] - q[0]))
+    # Here we lengthen the arrow by a factor of scale
+    q[0] = p[0] - scale * hypotenuse * cos(angle)
+    q[1] = p[1] - scale * hypotenuse * sin(angle)
+    cv2.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv2.LINE_AA)
+    # create the arrow hooks
+    p[0] = q[0] + 9 * cos(angle + pi / 4)
+    p[1] = q[1] + 9 * sin(angle + pi / 4)
+    cv2.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv2.LINE_AA)
+    p[0] = q[0] + 9 * cos(angle - pi / 4)
+    p[1] = q[1] + 9 * sin(angle - pi / 4)
+    cv2.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv2.LINE_AA)
+    
+def getOrientation(pts, img):
+    
+    sz = len(pts)
+    data_pts = np.empty((sz, 2), dtype=np.float64)
+    for i in range(data_pts.shape[0]):
+        data_pts[i,0] = pts[i,0,0]
+        data_pts[i,1] = pts[i,0,1]
+    # Perform PCA analysis
+    mean = np.empty((0))
+    mean, eigenvectors, eigenvalues = cv2.PCACompute2(data_pts, mean)
+    # Store the center of the object
+    cntr = (int(mean[0,0]), int(mean[0,1]))
+    
+    
+    cv2.circle(img, cntr, 3, (255, 0, 255), 2)
+    p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
+    p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0])
+    drawAxis(img, cntr, p1, (0, 255, 0), 1)
+    drawAxis(img, cntr, p2, (255, 255, 0), 5)
+    angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
+    
+    return np.rad2deg(angle)
 
 def correctPerspective(img):
     
@@ -164,10 +234,10 @@ def displayAllBoxes(img, rect):
     
     for rct in rect:
         x1, w, y1, h = rct
-        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,0), 2)
+        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,255,0), 2)
         cX = round(int(x1) + w/2.0)
         cY = round(int(y1) + h/2.0)
-        cv2.circle(img, (cX, cY), 7, (255, 0, 0), -1)
+        cv2.circle(img, (cX, cY), 7, (0, 255, 0), -1)
     
     return img
 

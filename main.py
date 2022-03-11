@@ -1,18 +1,31 @@
+
 import cv2
 from matplotlib import pyplot as plt
 import pytesseract
 import numpy as np
-from zmq import device
+
 import utlis
 from pytorch_unet import unet_predict
-import craft
-from craft_text_detector import Craft
+
+#import easyocr
 
 def ocrOutputs(img, bbox):
-    
     LowerThr = 5
     UpperThr = 5
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    PersonelID = {
+    "Tc": ' ',
+    "Surname": ' ',
+    "Name": ' ',
+    "DateofBirth":' '
+    }
+   
+    for id_info, box in zip(PersonelID, bbox):
+        x, w, y, h = box
+        crop_img = img_rgb[y-LowerThr:y+h+UpperThr, x-LowerThr:x+w+UpperThr]
+        PersonelID[id_info] = pytesseract.image_to_string(crop_img)
+
     for box in bbox :
         x, w, y, h = box
         crop_img = img_rgb[y-LowerThr:y+h+UpperThr, x-LowerThr:x+w+UpperThr]
@@ -22,6 +35,9 @@ def ocrOutputs(img, bbox):
         plt.imshow(crop_img, cmap='gray')
         plt.show()
         print(pytesseract.image_to_string(crop_img))
+    
+    return PersonelID
+
 
 
 def getCenterRatios(img, centers):
@@ -86,18 +102,26 @@ def matchCenters(ratios1, ratios2):
 
 def getCenterOfMasks(thresh):
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    detected_centers = []
-    img_h, img_w = thresh.shape
+    
+    boundingBoxes = [cv2.boundingRect(c) for c in contours]
+    (cnts, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes),key=lambda b:b[1][1], reverse=False))
 
-    for contour in contours:
+    print("len of countours:", len(cnts))
+    
+    detected_centers = []
+    indx = 0
+    for contour in cnts:
         (x,y,w,h) = cv2.boundingRect(contour)
-        M = cv2.moments(contour)
-        cX = round(int(x) + w/2.0)
-        cY = round(int(y) + h/2.0)
-        detected_centers.append((cX, cY))
-        cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
-        if w > 10 and h > 10:
+        if w > 10 and h > 5:
             cv2.rectangle(thresh, (x,y), (x+w,y+h), (255, 0, 0), 2)
+            cX = round(int(x) + w/2.0)
+            cY = round(int(y) + h/2.0)
+            detected_centers.append((cX, cY))
+            cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
+            indx = indx + 1
+        if(indx == 4):
+            break
+    print("len of detected centers:", len(detected_centers))
     #plt.imshow(thresh, cmap='gray')
     #plt.show()
     return np.array(detected_centers)
@@ -114,7 +138,7 @@ def getExtendedBoxCoordinates(box1, box1_r):
     return new_box
 
 
-def searchNearestBoundingBoxes(box_coordinates, box_indexes, img):
+def searchNearestBoundingBoxes( box_coordinates, box_indexes, img):
     
     DISTANCE_THRES = 10
     
@@ -124,6 +148,11 @@ def searchNearestBoundingBoxes(box_coordinates, box_indexes, img):
     box2 = box_coordinates[box_indexes[1]]
     box3 = box_coordinates[box_indexes[2]]
     box4 = box_coordinates[box_indexes[3]]
+
+    #box1 = regions[box_indexes[0]]
+    #box2 = regions[box_indexes[1]]
+    #box3 = regions[box_indexes[2]]
+    #box4 = regions[box_indexes[3]]
 
     right_centers_distance1 = np.zeros((len(right_centers_box_full), 1))
     right_centers_distance2 = np.zeros((len(right_centers_box_full), 1))
@@ -297,20 +326,18 @@ def getBoxRegions(regions):
     print("number of boxes", len(boxes))
     return np.array(boxes), np.array(centers)
 
-def createHeatMapAndBoxCoordinates(image):
-    
-    input_image = image.copy()
-    craft = Craft(output_dir='outputs', crop_type="poly", cuda=True)
-    prediction_result = craft.detect_text(input_image)
-    heatmaps = prediction_result["heatmaps"]
-   
-    return heatmaps["text_score_heatmap"], prediction_result["boxes"]
+
+def easyOcr(image):
+    reader = easyocr.Reader(['tr','en']) 
+    result = reader.readtext(image)
+    (bbox, text, prob) = result
+    print("easy ocr:", text)
 
 
 
 if '__main__' == __name__:
     
-    img1 = cv2.imread("images/ori5.jpg")
+    img1 = cv2.imread("images/ori4_7.jpg")
     
     plt.title("Original image")
     plt.imshow(img1)
@@ -320,16 +347,23 @@ if '__main__' == __name__:
     
     #final_img = utlis.correctPerspective(final_img)
     
-    txt_heat_map, regions = createHeatMapAndBoxCoordinates(final_img)
+    txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
 
     predicted_mask = unet_predict.unet_segment_model(txt_heat_map)
+    
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
     plt.show()
+    final_img = utlis.rotateImage(predicted_mask, final_img)
+    
+    txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
+
+    predicted_mask = unet_predict.unet_segment_model(txt_heat_map)
+
     bbox_coordinates , box_centers = getBoxRegions(regions)
-   
-    mask_centers = getCenterOfMasks(predicted_mask)
-   
+ 
+    mask_centers = getCenterOfMasks(predicted_mask.copy())
+    
     # centers ratio for 4 boxes
     centers_ratio_mask = getCenterRatios(predicted_mask, mask_centers) 
 
@@ -337,10 +371,16 @@ if '__main__' == __name__:
     centers_ratio_all = getCenterRatios(final_img, box_centers) 
   
     matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
-
+    
     new_bboxes = searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img.copy() )
     
-    ocrOutputs(final_img, new_bboxes) 
+
+    PersonelID = ocrOutputs(final_img, new_bboxes) 
+    for id, val in PersonelID.items():
+        print(id,':' ,val)
+
+
+
     
     displayMachedBoxes(final_img, new_bboxes)
     
@@ -352,8 +392,6 @@ if '__main__' == __name__:
     plt.figure()
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
-    #plt.figure()
-    #plt.imshow(img_res)
     plt.show()
    
         
