@@ -31,9 +31,9 @@ def addPadding(srcShapeTensor, tensor_whose_shape_isTobechanged):
         return target
     return tensor_whose_shape_isTobechanged
 
-class UNet(nn.Module):
+class UNET(nn.Module):
     def __init__(self):
-        super(UNet, self).__init__()
+        super(UNET, self).__init__()
         self.max_pool_2x2 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.down_conv_1 = double_conv(3, 64)
         self.down_conv_2 = double_conv(64, 128)
@@ -122,54 +122,86 @@ class UNet(nn.Module):
         # print(x.shape)
         return x
 
+class UnetModel:
 
-def unet_segment_model(input_image, DEVICE):
-    #model = smp.Unet(encoder_name="resnet50", encoder_weights="imagenet", in_channels=3, classes = 1, activation='sigmoid')
-    model = smp.Unet(encoder_name="resnet34", encoder_weights="imagenet", in_channels=3, classes = 1)
-    model.load_state_dict(torch.load('model/resnet34/UNet.pth'))
-    #model = torch.load('model/resnet34/best_model.pth', map_location=DEVICE)
-    model = model.to("cuda")
+    def __init__(self, model_name, device):
+        self.device = device
+        self.model_name = model_name
+        
+        print("Loading {} model".format( self.model_name))
 
-    input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
-    
-    img = torch.tensor(input_image)
-    
-    img = img.permute((2, 0, 1))
-   
-    img = img.unsqueeze(0).float()
-    img = img.to(DEVICE)
-    output = model(img)
-    output= output.squeeze(0)
-    output[output>0.0] = 1.0
-    output[output<=0.0]=0
-    output = output.squeeze(0)
-    
-    predicted_mask = output.detach().cpu().numpy()
-    
-    
-    return np.uint8(predicted_mask)
-    #return predicted_mask
+    def predict(self,input_img):
+        
+        predicted_mask = None
 
-def UnetModel(input_image):
+        if (self.model_name == "resnet34"):
+            predicted_mask = self.__load_resnet34_model(input_img)
+        
+        elif (self.model_name == "resnet50"):
+            predicted_mask = self.__load_resnet50_model(input_img)
+        
+        elif (self.model_name == "original"):
+            predicted_mask = self.__load_orig_model(input_img)
+       
+        else:
+            print("Select from resnet34, resnet50 or original")
+        
+        return predicted_mask
 
-    model = UNet()
-    model.load_state_dict(torch.load('model/unetModel_20.pth'))
-    model = model.to("cuda")
+    def __load_resnet34_model(self, input_img):
+        
+        model = smp.Unet(encoder_name="resnet34" , encoder_weights="imagenet", in_channels=3, classes = 1)
+        model.load_state_dict(torch.load('model/resnet34/UNet.pth',map_location=self.device))
+        model = model.to(self.device)
+        
+        img = torch.tensor(input_img)
+        img = img.permute((2, 0, 1)).unsqueeze(0).float()
+    
+        img = img.to(self.device)
+        output = model(img)
+        output= output.squeeze(0)
+        output[output>0.0] = 1.0
+        output[output<=0.0] = 0
+        output = output.squeeze(0)
+        
+        predicted_mask = output.detach().cpu().numpy()
+                
+        return np.uint8(predicted_mask)
 
-    input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
+    def __load_resnet50_model(self, input_img):
+        
+        model = smp.Unet(encoder_name="resnet50", encoder_weights="imagenet", in_channels=3, classes = 1, activation='sigmoid')
+        model.load_state_dict(torch.load('model/resnet50/UNet.pth'))
+        model = model.to(self.device)
+        
+        input_tensor = torch.tensor(input_img)
+        input_tensor = input_tensor.permute((2, 0, 1)).unsqueeze(0).float()
     
-    img = torch.tensor(input_image)
-    img = img.permute((2, 0, 1))
-    img = img.unsqueeze(0).float()
-    img = img.to("cuda")
-    output = model(img)
-    output= output.squeeze(0)
-    output[output>0.0] = 1.0
-    output[output<=0.0]=0
-    output = output.squeeze(0)
+        input_tensor = input_tensor.to(self.device)
+        output = model(input_tensor)
+        output= output.squeeze(0)
+        output = output.squeeze(0)
+        
+        predicted_mask = output.detach().cpu().numpy()
+                
+        return np.uint8(predicted_mask)
     
-    predicted_mask = output.detach().cpu().numpy()
-    
-    
-    return np.uint8(predicted_mask)
+    def __load_orig_model(self, input_img):
+        
+        model = UNET()
+        model.load_state_dict(torch.load('model/orig_unet/unetModel_20.pth'))
+        model = model.to(self.device)
+        
+        input_tensor = torch.tensor(input_img)
+        input_tensor = input_tensor.permute((2, 0, 1)).unsqueeze(0).float().to(self.device)
+
+        output = model(input_tensor)
+        output= output.squeeze(0)
+        output[output>0.0] = 1.0
+        output[output<=0.0]=0
+        output = output.squeeze(0)
+        
+        predicted_mask = output.detach().cpu().numpy()
+        
+        return np.uint8(predicted_mask)
 

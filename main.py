@@ -5,8 +5,8 @@ import pytesseract
 import numpy as np
 
 import utlis
-from pytorch_unet import unet_predict
 
+from pytorch_unet.unet_predict import UnetModel
 #import easyocr
 
 def ocrOutputs(img, bbox):
@@ -139,11 +139,6 @@ def searchNearestBoundingBoxes( box_coordinates, box_indexes, img):
     box2 = box_coordinates[box_indexes[1]]
     box3 = box_coordinates[box_indexes[2]]
     box4 = box_coordinates[box_indexes[3]]
-
-    #box1 = regions[box_indexes[0]]
-    #box2 = regions[box_indexes[1]]
-    #box3 = regions[box_indexes[2]]
-    #box4 = regions[box_indexes[3]]
 
     right_centers_distance1 = np.zeros((len(right_centers_box_full), 1))
     right_centers_distance2 = np.zeros((len(right_centers_box_full), 1))
@@ -340,7 +335,8 @@ if '__main__' == __name__:
     #final_img = cv2.resize(final_img, (512,512))
     txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
 
-    predicted_mask = unet_predict.unet_segment_model(txt_heat_map, "cuda")
+    model = UnetModel("resnet34", "cuda")
+    predicted_mask = model.predict(txt_heat_map)
     
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
@@ -349,7 +345,7 @@ if '__main__' == __name__:
     
     txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
 
-    predicted_mask = unet_predict.unet_segment_model(txt_heat_map, "cuda")
+    predicted_mask = model.predict(txt_heat_map)
 
     bbox_coordinates , box_centers = getBoxRegions(regions)
  
