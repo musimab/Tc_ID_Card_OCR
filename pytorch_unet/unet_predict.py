@@ -123,18 +123,21 @@ class UNet(nn.Module):
         return x
 
 
-def unet_segment_model(input_image):
-    
+def unet_segment_model(input_image, DEVICE):
+    #model = smp.Unet(encoder_name="resnet50", encoder_weights="imagenet", in_channels=3, classes = 1, activation='sigmoid')
     model = smp.Unet(encoder_name="resnet34", encoder_weights="imagenet", in_channels=3, classes = 1)
-    model.load_state_dict(torch.load('model/UNet.pth'))
+    model.load_state_dict(torch.load('model/resnet34/UNet.pth'))
+    #model = torch.load('model/resnet34/best_model.pth', map_location=DEVICE)
     model = model.to("cuda")
 
     input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
     
     img = torch.tensor(input_image)
+    
     img = img.permute((2, 0, 1))
+   
     img = img.unsqueeze(0).float()
-    img = img.to("cuda")
+    img = img.to(DEVICE)
     output = model(img)
     output= output.squeeze(0)
     output[output>0.0] = 1.0
@@ -145,6 +148,7 @@ def unet_segment_model(input_image):
     
     
     return np.uint8(predicted_mask)
+    #return predicted_mask
 
 def UnetModel(input_image):
 

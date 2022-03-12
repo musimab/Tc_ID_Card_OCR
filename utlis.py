@@ -283,13 +283,14 @@ def denoiseImage(img):
     
     img_denoise = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 15)
     imgGray = cv2.cvtColor(img_denoise , cv2.COLOR_BGR2GRAY)
-    ret, imgf = cv2.threshold(imgGray , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) #imgf contains Binary image
+    imgBlur = cv2.GaussianBlur(imgGray, (5,5), 1)
+    ret, imgf = cv2.threshold(imgBlur , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) #imgf contains Binary image
     
     kernel = np.ones((3,3), np.uint8)
     img_dilation = cv2.dilate( imgf, kernel, iterations=1)
     img_erosion = cv2.erode(img_dilation , kernel, iterations=1)
     
-    img_erosion = cv2.resize(img_erosion ,(img_erosion.shape[1], img_erosion.shape[0]))
+    #img_erosion = cv2.resize(img_erosion ,(img_erosion.shape[1], img_erosion.shape[0]))
     return img_erosion
 
 def detectFace(img):

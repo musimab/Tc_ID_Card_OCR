@@ -24,17 +24,8 @@ def ocrOutputs(img, bbox):
     for id_info, box in zip(PersonelID, bbox):
         x, w, y, h = box
         crop_img = img_rgb[y-LowerThr:y+h+UpperThr, x-LowerThr:x+w+UpperThr]
+        #crop_img = utlis.denoiseImage(crop_img)
         PersonelID[id_info] = pytesseract.image_to_string(crop_img)
-
-    for box in bbox :
-        x, w, y, h = box
-        crop_img = img_rgb[y-LowerThr:y+h+UpperThr, x-LowerThr:x+w+UpperThr]
-        #processed_img = utlis.denoiseImage(crop_img)
-        
-        plt.title("OCR image")
-        plt.imshow(crop_img, cmap='gray')
-        plt.show()
-        print(pytesseract.image_to_string(crop_img))
     
     return PersonelID
 
@@ -337,7 +328,7 @@ def easyOcr(image):
 
 if '__main__' == __name__:
     
-    img1 = cv2.imread("images/ori4_7.jpg")
+    img1 = cv2.imread("images/ori3.jpg")
     
     plt.title("Original image")
     plt.imshow(img1)
@@ -346,10 +337,10 @@ if '__main__' == __name__:
     final_img = changeOrientationUntilFaceFound(img1)
     
     #final_img = utlis.correctPerspective(final_img)
-    
+    #final_img = cv2.resize(final_img, (512,512))
     txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
 
-    predicted_mask = unet_predict.unet_segment_model(txt_heat_map)
+    predicted_mask = unet_predict.unet_segment_model(txt_heat_map, "cuda")
     
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
@@ -358,7 +349,7 @@ if '__main__' == __name__:
     
     txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
 
-    predicted_mask = unet_predict.unet_segment_model(txt_heat_map)
+    predicted_mask = unet_predict.unet_segment_model(txt_heat_map, "cuda")
 
     bbox_coordinates , box_centers = getBoxRegions(regions)
  
