@@ -1,33 +1,11 @@
 
 import cv2
 from matplotlib import pyplot as plt
-import pytesseract
 import numpy as np
-
 import utlis
-
+from find_nearest_box import NearestBox
 from pytorch_unet.unet_predict import UnetModel
-#import easyocr
-
-def ocrOutputs(img, bbox):
-    LowerThr = 5
-    UpperThr = 5
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    
-    PersonelID = {
-    "Tc": ' ',
-    "Surname": ' ',
-    "Name": ' ',
-    "DateofBirth":' '
-    }
-   
-    for id_info, box in zip(PersonelID, bbox):
-        x, w, y, h = box
-        crop_img = img_rgb[y-LowerThr:y+h+UpperThr, x-LowerThr:x+w+UpperThr]
-        #crop_img = utlis.denoiseImage(crop_img)
-        PersonelID[id_info] = pytesseract.image_to_string(crop_img)
-    
-    return PersonelID
+from extract_words import Image2Text
 
 
 
@@ -45,18 +23,6 @@ def getCenterRatios(img, centers):
         for i, center in enumerate(centers):
             ratios[i] = (center[0]/img_w, center[1]/img_h)
         return ratios
-
-
-def displayMachedBoxes(img, new_bboxes):
-    
-    for box in new_bboxes:
-        x1, w, y1, h = box
-        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,255), 2)
-        cX = round(int(x1) + w/2.0)
-        cY = round(int(y1) + h/2.0)
-        cv2.circle(img, (cX, cY), 7, (0, 255, 255), -1)
-        
-    return img
 
 
 def matchCenters(ratios1, ratios2):
@@ -118,163 +84,6 @@ def getCenterOfMasks(thresh):
     return np.array(detected_centers)
 
 
-def getExtendedBoxCoordinates(box1, box1_r):
-    
-    DISTANCE_THRES = 10
-    new_box = np.zeros_like(box1)
-    new_box[0] = box1[0] if(box1[0] < box1_r[0]) else box1_r[0]
-    new_box[1] = box1_r[1] + box1[1]  + DISTANCE_THRES 
-    new_box[2] = box1[2]
-    new_box[3] = box1[3] if(box1[3] > box1_r[3]) else box1_r[3]
-    return new_box
-
-
-def searchNearestBoundingBoxes( box_coordinates, box_indexes, img):
-    
-    DISTANCE_THRES = 10
-    
-    right_centers, left_centers, right_centers_box_full, left_centers_box_full = utlis.getRightAndLeftBoxCenters(box_coordinates, box_indexes)
-    
-    box1 = box_coordinates[box_indexes[0]]
-    box2 = box_coordinates[box_indexes[1]]
-    box3 = box_coordinates[box_indexes[2]]
-    box4 = box_coordinates[box_indexes[3]]
-
-    right_centers_distance1 = np.zeros((len(right_centers_box_full), 1))
-    right_centers_distance2 = np.zeros((len(right_centers_box_full), 1))
-    right_centers_distance3 = np.zeros((len(right_centers_box_full), 1))
-    right_centers_distance4 = np.zeros((len(right_centers_box_full), 1))
-
-    left_centers_distance1 = np.zeros((len( left_centers_box_full), 1) )
-    left_centers_distance2 = np.zeros((len( left_centers_box_full), 1) )
-    left_centers_distance3 = np.zeros((len( left_centers_box_full), 1) )
-    left_centers_distance4 = np.zeros((len( left_centers_box_full), 1) )
-
-
-    for i , left_box_centers in enumerate(left_centers_box_full):
-        
-        right_centers_distance1[i] = np.linalg.norm(right_centers[0] - left_box_centers) #box1 right center - other boxes left center
-        right_centers_distance2[i] = np.linalg.norm(right_centers[1] - left_box_centers)
-        right_centers_distance3[i] = np.linalg.norm(right_centers[2] - left_box_centers)
-        right_centers_distance4[i] = np.linalg.norm(right_centers[3] - left_box_centers)
-    
-    for i , right_box_centers in enumerate(right_centers_box_full):
-        
-        left_centers_distance1[i] = np.linalg.norm(left_centers[0] - right_box_centers) # box1 left center - other boexes right center
-        left_centers_distance2[i] = np.linalg.norm(left_centers[1] - right_box_centers)
-        left_centers_distance3[i] = np.linalg.norm(left_centers[2] - right_box_centers)
-        left_centers_distance4[i] = np.linalg.norm(left_centers[3] - right_box_centers)
-
-    box1_r_neighbours = np.where(np.all(right_centers_distance1>0, axis=1 ) & np.all(right_centers_distance1 < [DISTANCE_THRES], axis=1))
-    box2_r_neighbours = np.where(np.all(right_centers_distance2>0, axis=1 ) & np.all(right_centers_distance2 < [DISTANCE_THRES], axis=1))
-    box3_r_neighbours = np.where(np.all(right_centers_distance3>0, axis=1 ) & np.all(right_centers_distance3 < [DISTANCE_THRES], axis=1))
-    box4_r_neighbours = np.where(np.all(right_centers_distance4>0, axis=1 ) & np.all(right_centers_distance4 < [DISTANCE_THRES], axis=1))
-
-    if(box1_r_neighbours[0].size):
-        box_index = 0
-        box1_r_indexes = np.squeeze(box1_r_neighbours)
-        box1_r = box_coordinates[box1_r_indexes]
-        new_box1 = getExtendedBoxCoordinates(box1, box1_r)
-
-        print("box1:", box1)
-        print("right box1:", box1_r)
-        print("new box1:", new_box1)
-        img = utlis.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box1_r_neighbours, img)
-        box1 = new_box1
-    
-    if(box2_r_neighbours[0].size):
-        box_index = 1
-        box2_r_indexes = np.squeeze(box2_r_neighbours)
-        box2_r = box_coordinates[box2_r_indexes]
-        new_box2 = getExtendedBoxCoordinates(box2, box2_r)
-     
-        print("box2:", box2)
-        print("right box2:",box2_r)
-        print("new box2:", new_box2)
-        img = utlis.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box2_r_neighbours, img)
-        box2 = new_box2
-    
-    if(box3_r_neighbours[0].size):
-        box_index = 2
-        box3_r_indexes = np.squeeze(box3_r_neighbours)
-        box3_r = box_coordinates[box3_r_indexes]
-        new_box3 = getExtendedBoxCoordinates(box3, box3_r)
-
-        print("box3:", box3)
-        print("right box3:",box3_r)
-        print("new box3:", new_box3)
-        img = utlis.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box3_r_neighbours, img)
-        box3 = new_box3
-
-    if(box4_r_neighbours[0].size):
-        box_index = 3
-        box4_r_indexes = np.squeeze(box4_r_neighbours)
-        box4_r = box_coordinates[box4_r_indexes]
-        new_box4 = getExtendedBoxCoordinates(box4, box4_r)
-
-        print("box4:", box4)
-        print("right box4:",box4_r)
-        print("new box4:", new_box4)
-        img = utlis.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box4_r_neighbours, img)
-        box4 = new_box4
-
-    box1_l_neighbours = np.where(np.all(left_centers_distance1>0, axis=1 ) & np.all(left_centers_distance1 < [DISTANCE_THRES], axis=1))
-    box2_l_neighbours = np.where(np.all(left_centers_distance2>0, axis=1 ) & np.all(left_centers_distance2 < [DISTANCE_THRES], axis=1))
-    box3_l_neighbours = np.where(np.all(left_centers_distance3>0, axis=1 ) & np.all(left_centers_distance3 < [DISTANCE_THRES], axis=1))
-    box4_l_neighbours = np.where(np.all(left_centers_distance4>0, axis=1 ) & np.all(left_centers_distance4 < [DISTANCE_THRES], axis=1))
-
-    if(box1_l_neighbours[0].size):
-        
-        box_index = 0
-        box1_l_indexes = np.squeeze(box1_l_neighbours)
-        box1_l = box_coordinates[box1_l_indexes]
-        new_box1 = getExtendedBoxCoordinates(box1, box1_l)
-        
-        print("box1:", box1)
-        print("left box1:", box1_l)
-        print("new box1:", new_box1)
-        img = utlis.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box1_l_neighbours, img)
-        box1 = new_box1
-
-    if(box2_l_neighbours[0].size):
-        
-        box_index = 1
-        box2_l_indexes = np.squeeze(box2_l_neighbours)
-        box2_l = box_coordinates[box2_l_indexes]
-        new_box2 = getExtendedBoxCoordinates(box2, box2_l)
-        print("box2:", box2)
-        print("left box2:", box1_l)
-        print("new box2:", new_box2)
-        img = utlis.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box2_l_neighbours, img)
-        box2 = new_box2
-
-    if(box3_l_neighbours[0].size):
-        
-        box_index = 2
-        box3_l_indexes = np.squeeze(box3_l_neighbours)
-        box3_l = box_coordinates[box3_l_indexes]
-        new_box3 = getExtendedBoxCoordinates(box3, box3_l)
-        print("box3:", box3)
-        print("left box3:", box3_l)
-        print("new box3:", new_box3)
-        img = utlis.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box3_l_neighbours, img)
-        box3 = new_box3
-
-    if(box4_l_neighbours[0].size):
-        
-        box_index = 3
-        box4_l_indexes = np.squeeze(box4_l_neighbours)
-        box4_l = box_coordinates[box4_l_indexes]
-        new_box1 = getExtendedBoxCoordinates(box4, box4_l)
-        print("box4:", box4)
-        print("left box4:", box4_l)
-        print("new box4:", new_box4)
-        img = utlis.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box4_l_neighbours, img)
-        box4 = new_box4
-
-    return box1, box2, box3, box4
-
-
 def changeOrientationUntilFaceFound(image):
     
     img = image.copy()
@@ -313,21 +122,12 @@ def getBoxRegions(regions):
     return np.array(boxes), np.array(centers)
 
 
-def easyOcr(image):
-    reader = easyocr.Reader(['tr','en']) 
-    result = reader.readtext(image)
-    (bbox, text, prob) = result
-    print("easy ocr:", text)
-
-
 
 if '__main__' == __name__:
     
-    img1 = cv2.imread("images/ori3.jpg")
-    
-    plt.title("Original image")
-    plt.imshow(img1)
-    plt.show()
+    img1 = cv2.imread("images/ori13_9.jpg")
+    #img1 = cv2.imread("images/wifetc.JPG")
+    ORI_THRESH = 3
     
     final_img = changeOrientationUntilFaceFound(img1)
     
@@ -341,12 +141,21 @@ if '__main__' == __name__:
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
     plt.show()
-    final_img = utlis.rotateImage(predicted_mask, final_img)
     
-    txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
+    orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
+    print("orientation_angle is ", orientation_angle)
+    
+    if ( abs(orientation_angle) > ORI_THRESH ):
+        
+        print("absulute orientation_angle is greater than {}".format(ORI_THRESH)  )
+        
+        final_img = utlis.rotateImage(orientation_angle, final_img)
+        
+        txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
 
-    predicted_mask = model.predict(txt_heat_map)
+        predicted_mask = model.predict(txt_heat_map)
 
+    
     bbox_coordinates , box_centers = getBoxRegions(regions)
  
     mask_centers = getCenterOfMasks(predicted_mask.copy())
@@ -359,17 +168,16 @@ if '__main__' == __name__:
   
     matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
     
-    new_bboxes = searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img.copy() )
+    nearestBox = NearestBox(distance_thresh = 10, draw_line=False)
+    new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img.copy())
     
-
-    PersonelID = ocrOutputs(final_img, new_bboxes) 
-    for id, val in PersonelID.items():
+    ocrResult = Image2Text(ocr_method="Easy",lw_thresh=5,up_thresh=5,denoising=False)
+    PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
+    
+    for id, val in PersonInfo.items():
         print(id,':' ,val)
-
-
-
     
-    displayMachedBoxes(final_img, new_bboxes)
+    utlis.displayMachedBoxes(final_img, new_bboxes)
     
     #utlis.displayAllBoxes(final_img, bbox_coordinates)
     

@@ -140,6 +140,9 @@ class UnetModel:
         elif (self.model_name == "resnet50"):
             predicted_mask = self.__load_resnet50_model(input_img)
         
+        elif (self.model_name == "vgg13"):
+            predicted_mask = self.__load_vgg13_model(input_img)
+        
         elif (self.model_name == "original"):
             predicted_mask = self.__load_orig_model(input_img)
        
@@ -175,11 +178,29 @@ class UnetModel:
         model = model.to(self.device)
         
         input_tensor = torch.tensor(input_img)
-        input_tensor = input_tensor.permute((2, 0, 1)).unsqueeze(0).float()
-    
-        input_tensor = input_tensor.to(self.device)
+        input_tensor = input_tensor.permute((2, 0, 1)).unsqueeze(0).float().to(self.device)
+
         output = model(input_tensor)
         output= output.squeeze(0)
+        output = output.squeeze(0)
+        
+        predicted_mask = output.detach().cpu().numpy()
+                
+        return np.uint8(predicted_mask)
+    
+    def __load_vgg13_model(self, input_img):
+        
+        model = smp.Unet(encoder_name="vgg13", encoder_weights="imagenet", in_channels=3, classes = 1, activation='sigmoid')
+        model.load_state_dict(torch.load('model/vgg13/UNet.pth'))
+        model = model.to(self.device)
+
+        input_tensor = torch.tensor(input_img)
+        input_tensor = input_tensor.permute((2, 0, 1)).unsqueeze(0).float().to(self.device)
+
+        output = model(input_tensor)
+        output= output.squeeze(0)
+        output[output>0.0] = 1.0
+        output[output<=0.0] = 0
         output = output.squeeze(0)
         
         predicted_mask = output.detach().cpu().numpy()

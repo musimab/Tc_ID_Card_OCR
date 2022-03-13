@@ -9,6 +9,17 @@ modelFile = "model/res10_300x300_ssd_iter_140000.caffemodel"
 configFile = "model/deploy.prototxt.txt"
 FaceNet = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 
+def displayMachedBoxes(img, new_bboxes):
+    
+    for box in new_bboxes:
+        x1, w, y1, h = box
+        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,255), 2)
+        cX = round(int(x1) + w/2.0)
+        cY = round(int(y1) + h/2.0)
+        cv2.circle(img, (cX, cY), 7, (0, 255, 255), -1)
+        
+    return img
+
 def createHeatMapAndBoxCoordinates(image):
     
     input_image = image.copy()
@@ -39,21 +50,25 @@ def readBBoxCordinatesAndCenters(coordinates_txt):
     print("number of boxes", len(boxes))
     return np.array(boxes), np.array(centers)
 
-
-def rotateImage(mask, final_img):
-    
+def findOrientationofLines(mask):
     cntrs ,hiarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if(len(cntrs) == 0):
+        return None
+    
     areas = [cv2.contourArea(c) for c in cntrs]
     max_index = np.argmax(areas)
     cnt = cntrs[max_index]
    
     angle_pca = getOrientation(cnt,mask)
-    print("angle pca:", angle_pca)
+
+    return angle_pca
+
+def rotateImage(orientation_angle, final_img):
     
     (h, w) = final_img.shape[:2]
     (cX, cY) = (w // 2, h // 2)
 
-    M = cv2.getRotationMatrix2D((cX, cY), angle_pca, 1.0)
+    M = cv2.getRotationMatrix2D((cX, cY), orientation_angle, 1.0)
     
     return cv2.warpAffine(final_img, M, (w, h))
 
@@ -88,7 +103,6 @@ def getOrientation(pts, img):
     mean, eigenvectors, eigenvalues = cv2.PCACompute2(data_pts, mean)
     # Store the center of the object
     cntr = (int(mean[0,0]), int(mean[0,1]))
-    
     
     cv2.circle(img, cntr, 3, (255, 0, 255), 2)
     p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
@@ -241,57 +255,6 @@ def displayAllBoxes(img, rect):
     
     return img
 
-def getRightAndLeftBoxCenters(box_coordinates, box_indexes):
-    
-    right_centers = np.zeros((4,2), dtype=np.int32)
-    left_centers = np.zeros((4,2), dtype=np.int32)
-    
-    right_centers_box_full = np.zeros((len(box_coordinates),2))
-    left_centers_box_full  = np.zeros((len(box_coordinates),2))
-
-    box1 = box_coordinates[box_indexes[0]]
-    box2 = box_coordinates[box_indexes[1]]
-    box3 = box_coordinates[box_indexes[2]]
-    box4 = box_coordinates[box_indexes[3]]
- 
-    right_centers[0] = (box1[0]+ box1[1], round(box1[2]+box1[3]/2))
-    right_centers[1] = (box2[0]+ box2[1], round(box2[2]+box2[3]/2))
-    right_centers[2] = (box3[0]+ box3[1], round(box3[2]+box3[3]/2))
-    right_centers[3] = (box4[0]+ box4[1], round(box4[2]+box4[3]/2))
-
-    left_centers[0] =  (box1[0], round(box1[2]+box1[3]/2))
-    left_centers[1] =  (box2[0], round(box2[2]+box2[3]/2))
-    left_centers[2] =  (box3[0], round(box3[2]+box3[3]/2))
-    left_centers[3] =  (box4[0], round(box4[2]+box4[3]/2))
-
-    for i, box in enumerate(box_coordinates):
-        right_centers_box_full[i] = (box[0]+ box[1], round(box[2]+box[3]/2))
-        left_centers_box_full[i]  = (box[0], round(box[2]+ box[3]/2))
-    
-    return right_centers, left_centers, right_centers_box_full, left_centers_box_full
-
-
-def drawlineBetweenBox(BoxNum, right_centers, left_centers_box_full, box2_r_neighbours, img):
-    
-    start_point = int(right_centers[BoxNum][0]),int(right_centers[BoxNum][1])
-    box2_neighbour_indexes = np.squeeze(box2_r_neighbours)
-    end_point = int(left_centers_box_full[box2_neighbour_indexes][0]), int(left_centers_box_full[box2_neighbour_indexes][1])
-
-    return cv2.line(img, end_point,start_point,  (0,255,0), 3)
-
-def denoiseImage(img):
-    
-    img_denoise = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 15)
-    imgGray = cv2.cvtColor(img_denoise , cv2.COLOR_BGR2GRAY)
-    imgBlur = cv2.GaussianBlur(imgGray, (5,5), 1)
-    ret, imgf = cv2.threshold(imgBlur , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) #imgf contains Binary image
-    
-    kernel = np.ones((3,3), np.uint8)
-    img_dilation = cv2.dilate( imgf, kernel, iterations=1)
-    img_erosion = cv2.erode(img_dilation , kernel, iterations=1)
-    
-    #img_erosion = cv2.resize(img_erosion ,(img_erosion.shape[1], img_erosion.shape[0]))
-    return img_erosion
 
 def detectFace(img):
 
