@@ -33,3 +33,10 @@
 ![Name](https://user-images.githubusercontent.com/47300390/158069223-583bee9a-534e-414f-aaff-32d595c899eb.jpg)
 ![Surname](https://user-images.githubusercontent.com/47300390/158069227-81ffb2ee-7c36-4e0a-861d-47b2260ace9b.jpg)
 ![Tc](https://user-images.githubusercontent.com/47300390/158069231-0d051bd9-5e57-483f-a67d-bd1087873f97.jpg)
+
+## Ocr Output
+
+Tc : 12345678901
+Surname : YILMAZ
+Name : MEHMET
+DateofBirth : 01.01.1990
