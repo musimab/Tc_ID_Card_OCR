@@ -1,12 +1,11 @@
 # Usage
 
 ## TODOs
-1. Unet model will be developed
-2. deep learning based (Yolo SSD Faster Rcnn) identity card recognition model will be deveeloped
+1. deep learning based (Yolo SSD Faster Rcnn) identity card recognition model will be developed
 
 
 ## Algorithm Pipeline
-![ocr_pipeline_eng_2](https://user-images.githubusercontent.com/47300390/156430579-8751f295-9ae5-46ca-a802-5094563983a3.jpg)
+![ocr_pip_update1](https://user-images.githubusercontent.com/47300390/158075210-1ed286a2-f8ee-4007-b158-51fcc342add3.jpg)
 
 ## Input image
 ![tcocr](https://user-images.githubusercontent.com/47300390/158068982-1eb2394c-ae25-480c-9e2f-d0f1ebe69361.jpeg)
@@ -40,3 +39,7 @@ Tc : 12345678901
 Surname : YILMAZ
 Name : MEHMET
 DateofBirth : 01.01.1990
+
+
+### Easy Ocr
+https://github.com/sarra831/EasyOCR
