@@ -9,20 +9,27 @@
 ![ocr_pipeline_eng_2](https://user-images.githubusercontent.com/47300390/156430579-8751f295-9ae5-46ca-a802-5094563983a3.jpg)
 
 ## Input image
-![id1](https://user-images.githubusercontent.com/47300390/156431357-e9424400-f9b9-49fd-be94-2441b29f1d7d.jpeg)
+![tcocr](https://user-images.githubusercontent.com/47300390/158068982-1eb2394c-ae25-480c-9e2f-d0f1ebe69361.jpeg)
 
-## Warped image
-![final_img](https://user-images.githubusercontent.com/47300390/156431165-75a5fd88-d900-4909-ba90-a5075860daa9.png)
+## Rotated image
+![final_img](https://user-images.githubusercontent.com/47300390/158069046-333e582c-0b98-469a-a908-3e210e4c8b3a.jpg)
+
 
 ## CRAFT Character Density Map
-![res_final_img_mask](https://user-images.githubusercontent.com/47300390/156431651-c5a035ac-11b5-4018-94da-e9f6ba47829a.jpg)
+![txt_heat_map](https://user-images.githubusercontent.com/47300390/158069076-5b91e198-f65a-4599-ac61-322b8a9b3e23.jpg)
 
 ## Unet Output for character density map
-![res_final_img_mask_](https://user-images.githubusercontent.com/47300390/156431494-de2eef9f-cdae-49fa-be37-a71e1ad1112c.jpg)
+![predicted_mask_fin](https://user-images.githubusercontent.com/47300390/158069105-e6b330ee-4f62-4431-96a5-9f5a09d97cf1.jpg)
 
 ## Craft Output
-![res_final_img](https://user-images.githubusercontent.com/47300390/156431853-2b13b9d2-85a3-467f-94f9-f71b30c495f6.jpg)
+![image_text_detection](https://user-images.githubusercontent.com/47300390/158069125-5480a4fd-31b9-401d-b00b-081ed761ee09.png)
 
 ## Matched Boxes
-![Mask](https://user-images.githubusercontent.com/47300390/156435364-2adf8590-eef1-4217-9584-d9e00f2f9f98.png)
-![MatchedBoxes](https://user-images.githubusercontent.com/47300390/156435370-cae02763-9eb0-4119-9516-06f70378caff.png)
+
+![final_img_](https://user-images.githubusercontent.com/47300390/158069152-af8848d4-510e-4073-85d2-0a72e3d2f35c.jpg)
+
+## Cropped Roi
+![DateofBirth](https://user-images.githubusercontent.com/47300390/158069210-f2567e85-1635-41d1-b389-62e37d02bb63.jpg)
+![Name](https://user-images.githubusercontent.com/47300390/158069223-583bee9a-534e-414f-aaff-32d595c899eb.jpg)
+![Surname](https://user-images.githubusercontent.com/47300390/158069227-81ffb2ee-7c36-4e0a-861d-47b2260ace9b.jpg)
+![Tc](https://user-images.githubusercontent.com/47300390/158069231-0d051bd9-5e57-483f-a67d-bd1087873f97.jpg)
