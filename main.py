@@ -125,19 +125,28 @@ def getBoxRegions(regions):
 
 if '__main__' == __name__:
     
-    img1 = cv2.imread("images/ori13_9.jpg")
+    #img1 = cv2.imread("images/me.jpeg")
+    img1 = cv2.imread("images/tcocr.jpeg")
     #img1 = cv2.imread("images/wifetc.JPG")
+    img1 = cv2.cvtColor(img1 , cv2.COLOR_BGR2RGB)
+    
+    
     ORI_THRESH = 3
     
     final_img = changeOrientationUntilFaceFound(img1)
     
     #final_img = utlis.correctPerspective(final_img)
-    #final_img = cv2.resize(final_img, (512,512))
+    
+    final_img = cv2.resize(final_img, (480,640))
+   
+
     txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
+    txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
+    
 
     model = UnetModel("resnet34", "cuda")
     predicted_mask = model.predict(txt_heat_map)
-    
+  
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
     plt.show()
@@ -150,10 +159,11 @@ if '__main__' == __name__:
         print("absulute orientation_angle is greater than {}".format(ORI_THRESH)  )
         
         final_img = utlis.rotateImage(orientation_angle, final_img)
-        
+    
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
-
+        txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
         predicted_mask = model.predict(txt_heat_map)
+       
 
     
     bbox_coordinates , box_centers = getBoxRegions(regions)
@@ -168,8 +178,8 @@ if '__main__' == __name__:
   
     matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
     
-    nearestBox = NearestBox(distance_thresh = 10, draw_line=False)
-    new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img.copy())
+    nearestBox = NearestBox(distance_thresh = 10, draw_line=True)
+    new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
     
     ocrResult = Image2Text(ocr_method="Easy",lw_thresh=5,up_thresh=5,denoising=False)
     PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
@@ -184,10 +194,12 @@ if '__main__' == __name__:
     plt.figure()
     plt.title("final_img")
     plt.imshow(final_img)
+   
     plt.figure()
     plt.title("Predicted Mask")
     plt.imshow(predicted_mask, cmap='gray')
     plt.show()
+
    
         
 
