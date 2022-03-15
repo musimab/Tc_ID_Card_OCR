@@ -6,7 +6,7 @@ import utlis
 from find_nearest_box import NearestBox
 from pytorch_unet.unet_predict import UnetModel
 from extract_words import Image2Text
-
+import os
 
 
 def getCenterRatios(img, centers):
@@ -57,7 +57,9 @@ def matchCenters(ratios1, ratios2):
     return np.squeeze(arg_min_b0), np.squeeze(arg_min_b1), np.squeeze(arg_min_b2),np.squeeze(arg_min_b3)         
 
 
-def getCenterOfMasks(thresh):
+def getCenterOfMasks(thrsh):
+    
+    thresh = thrsh.copy()
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
     boundingBoxes = [cv2.boundingRect(c) for c in contours]
@@ -70,11 +72,11 @@ def getCenterOfMasks(thresh):
     for contour in cnts:
         (x,y,w,h) = cv2.boundingRect(contour)
         if w > 10 and h > 5:
-            cv2.rectangle(thresh, (x,y), (x+w,y+h), (255, 0, 0), 2)
+            cv2.rectangle(thrsh, (x,y), (x+w,y+h), (255, 0, 0), 2)
             cX = round(int(x) + w/2.0)
             cY = round(int(y) + h/2.0)
             detected_centers.append((cX, cY))
-            cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
+            cv2.circle(thrsh, (cX, cY), 7, (255, 0, 0), -1)
             indx = indx + 1
         if(indx == 4):
             break
@@ -122,83 +124,94 @@ def getBoxRegions(regions):
     return np.array(boxes), np.array(centers)
 
 
+def load_images_from_folder(folder):
+    images = []
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder,filename))
+        print("filename:", filename)
+        if img is not None:
+            images.append(img)
+    
+    return images
+
 
 if '__main__' == __name__:
     
-    #img1 = cv2.imread("images/me.jpeg")
-    img1 = cv2.imread("images/tcocr.jpeg")
-    #img1 = cv2.imread("images/wifetc.JPG")
-    img1 = cv2.cvtColor(img1 , cv2.COLOR_BGR2RGB)
     
+    #img1 = cv2.imread("images/me.jpeg")
+    #img1 = cv2.imread("images/tcocr.jpeg")
+    #img1 = cv2.imread("images/wifetc.JPG")
     
     ORI_THRESH = 3
-    
-    final_img = changeOrientationUntilFaceFound(img1)
-    
-    #final_img = utlis.correctPerspective(final_img)
-    
-    final_img = cv2.resize(final_img, (480,640))
-   
-
-    txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
-    txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
-    
-
     model = UnetModel("resnet34", "cuda")
-    predicted_mask = model.predict(txt_heat_map)
-  
-    plt.title("Predicted Mask")
-    plt.imshow(predicted_mask, cmap='gray')
-    plt.show()
+    nearestBox = NearestBox(distance_thresh = 10, draw_line=True)
     
-    orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
-    print("orientation_angle is ", orientation_angle)
-    
-    if ( abs(orientation_angle) > ORI_THRESH ):
+    folder = "tc"
+
+    for filename in sorted(os.listdir(folder)):
         
-        print("absulute orientation_angle is greater than {}".format(ORI_THRESH)  )
+        img = cv2.imread(os.path.join(folder,filename))
+        img1 = cv2.cvtColor(img , cv2.COLOR_BGR2RGB)
+       
+        final_img = changeOrientationUntilFaceFound(img1)
         
-        final_img = utlis.rotateImage(orientation_angle, final_img)
+        #final_img = utlis.correctPerspective(final_img)
+        
+        #final_img = cv2.resize(final_img, (480,640))
     
+
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
         txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
+        
         predicted_mask = model.predict(txt_heat_map)
-       
+    
+        orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
+        print("orientation_angle is ", orientation_angle)
+        
+        if ( abs(orientation_angle) > ORI_THRESH ):
+            
+            print("absulute orientation_angle is greater than {}".format(ORI_THRESH)  )
+            
+            final_img = utlis.rotateImage(orientation_angle, final_img)
+        
+            txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
+            txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
+            predicted_mask = model.predict(txt_heat_map)
+        
+        
+        bbox_coordinates , box_centers = getBoxRegions(regions)
+    
+        mask_centers = getCenterOfMasks(predicted_mask)
+        
+        # centers ratio for 4 boxes
+        centers_ratio_mask = getCenterRatios(predicted_mask, mask_centers) 
 
+        # centers ratio for all boxes
+        centers_ratio_all = getCenterRatios(final_img, box_centers) 
     
-    bbox_coordinates , box_centers = getBoxRegions(regions)
- 
-    mask_centers = getCenterOfMasks(predicted_mask.copy())
+        matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
+        
+        
+        new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
+        
+        ocrResult = Image2Text(ocr_method="Easy", lw_thresh=5, up_thresh=5, denoising=False, file_name=filename)
+        PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
+        
+        for id, val in PersonInfo.items():
+            print(id,':' ,val)
+        
+        #utlis.displayMachedBoxes(final_img, new_bboxes)
+        
+        #utlis.displayAllBoxes(final_img, bbox_coordinates)
+        
+        #plt.figure()
+        #plt.title("final_img")
+        #plt.imshow(final_img)
     
-    # centers ratio for 4 boxes
-    centers_ratio_mask = getCenterRatios(predicted_mask, mask_centers) 
-
-    # centers ratio for all boxes
-    centers_ratio_all = getCenterRatios(final_img, box_centers) 
-  
-    matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
-    
-    nearestBox = NearestBox(distance_thresh = 10, draw_line=True)
-    new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
-    
-    ocrResult = Image2Text(ocr_method="Easy",lw_thresh=5,up_thresh=5,denoising=False)
-    PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
-    
-    for id, val in PersonInfo.items():
-        print(id,':' ,val)
-    
-    utlis.displayMachedBoxes(final_img, new_bboxes)
-    
-    #utlis.displayAllBoxes(final_img, bbox_coordinates)
-    
-    plt.figure()
-    plt.title("final_img")
-    plt.imshow(final_img)
-   
-    plt.figure()
-    plt.title("Predicted Mask")
-    plt.imshow(predicted_mask, cmap='gray')
-    plt.show()
+        #plt.figure()
+        #plt.title("Predicted Mask")
+        #plt.imshow(predicted_mask, cmap='gray')
+        #plt.show()
 
    
         

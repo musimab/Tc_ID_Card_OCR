@@ -154,7 +154,7 @@ class UnetModel:
     def __load_resnet34_model(self, input_img):
         
         model = smp.Unet(encoder_name="resnet34" , encoder_weights="imagenet", in_channels=3, classes = 1)
-        model.load_state_dict(torch.load('model/resnet34/UNet.pth',map_location=self.device))
+        model.load_state_dict(torch.load('model/resnet34/UNet_sig.pth',map_location=self.device))
         model = model.to(self.device)
         
         img = torch.tensor(input_img)
@@ -170,10 +170,11 @@ class UnetModel:
         predicted_mask = output.detach().cpu().numpy()
                 
         return np.uint8(predicted_mask)
+        
 
     def __load_resnet50_model(self, input_img):
         
-        model = smp.Unet(encoder_name="resnet50", encoder_weights="imagenet", in_channels=3, classes = 1, activation='sigmoid')
+        model = smp.Unet(encoder_name="resnet50", encoder_weights="imagenet", in_channels=3, classes = 1)
         model.load_state_dict(torch.load('model/resnet50/UNet.pth'))
         model = model.to(self.device)
         
@@ -182,6 +183,8 @@ class UnetModel:
 
         output = model(input_tensor)
         output= output.squeeze(0)
+        output[output>0.0] = 1.0
+        output[output<=0.0] = 0
         output = output.squeeze(0)
         
         predicted_mask = output.detach().cpu().numpy()
@@ -190,7 +193,7 @@ class UnetModel:
     
     def __load_vgg13_model(self, input_img):
         
-        model = smp.Unet(encoder_name="vgg13", encoder_weights="imagenet", in_channels=3, classes = 1, activation='sigmoid')
+        model = smp.Unet(encoder_name="vgg13", encoder_weights="imagenet", in_channels=3, classes = 1)
         model.load_state_dict(torch.load('model/vgg13/UNet.pth'))
         model = model.to(self.device)
 

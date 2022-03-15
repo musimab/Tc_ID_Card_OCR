@@ -8,3 +8,5 @@ output*
 craft*
 images*
 __pycache__*
+tc*
+*.json

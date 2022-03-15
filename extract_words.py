@@ -4,6 +4,8 @@ import pytesseract
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import json
+import os
 
 TesseractOcrInfo = {
 
@@ -21,27 +23,50 @@ KerasOcrInfo = {
         "DateofBirth":' '
 }
 
-EasyOcrInfo = {
+CardInfo = {}
 
-        "Tc": ' ',
-        "Surname": ' ',
-        "Name": ' ',
-        "DateofBirth":' '
-}
+
+EasyOcrInfo = {}
+
+
+class SaveOcrInfo:
+
+    def __init__(self) -> None:
+        
+        self.EasyOcrInfo = {}
+        self.data_path = 'test/predictions_json'
+        self.dict_path = self.data_path +  '/data.json'
+        if not os.path.exists(self.data_path):
+            os.makedirs(self.data_path)
+
+    def saveDict(self, dict_name):
+        
+        with open(self.dict_path, 'w', encoding='utf-8') as fp:
+            json.dump(dict_name, fp, ensure_ascii = False)
+    
+    def loadDict(self):
+        
+        with open(self.dict_path, 'r', encoding='utf-8') as fp:
+            data = json.load(fp)
+            print(data)
+    
 
 
 class Image2Text():
     
-    def __init__(self, ocr_method, lw_thresh = 3, up_thresh = 3, denoising = False) -> None:
+    def __init__(self, ocr_method, lw_thresh = 3, up_thresh = 3, denoising = False, file_name=None) -> None:
         
         self.ocr_method = ocr_method
         self.lw_thresh = lw_thresh
         self.up_thresh = up_thresh
         self.denoise = denoising
+        self.img_name = file_name
         self.crop_img = list()
         self.crop_img_names = []
-        self.pipeline = keras_ocr.pipeline.Pipeline()
+        #self.pipeline = keras_ocr.pipeline.Pipeline()
         self.reader = easyocr.Reader(['tr','en'])
+
+        self.IdCardInfo = SaveOcrInfo()
     
     def ocrOutput(self, img, bbox):
         
@@ -80,6 +105,26 @@ class Image2Text():
             self.crop_img_names.append(crop_name)
 
     
+    def easyOcr(self, img, bbox):
+
+        self.cropRoi(img, bbox)
+        id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
+
+        for info, img  in zip(id_infos, self.crop_img_names):
+            result = self.reader.readtext(img)
+            if(len(result)):
+                box, text, prob = result[0]
+                self.IdCardInfo.EasyOcrInfo[info] = text
+        
+        self.IdCardInfo.EasyOcrInfo["DateofBirth"] = self.getonlyDigits(self.IdCardInfo.EasyOcrInfo["DateofBirth"])
+        
+        CardInfo[self.img_name] = self.IdCardInfo.EasyOcrInfo
+        self.IdCardInfo.saveDict(CardInfo)
+        
+        
+        return self.IdCardInfo.EasyOcrInfo
+
+
     def tesserctOcr(self,img, bbox):
         
         self.cropRoi(img, bbox)
@@ -89,7 +134,7 @@ class Image2Text():
 
         return TesseractOcrInfo
 
-
+    """
     def kerasOcr(self,img, bbox):
        
         self.cropRoi(img, bbox)
@@ -108,19 +153,8 @@ class Image2Text():
                 KerasOcrInfo[info] = new_text
 
         return KerasOcrInfo 
-
-    def easyOcr(self, img, bbox):
-        self.cropRoi(img, bbox)
-        
-        for info, img  in zip(EasyOcrInfo, self.crop_img_names):
-            result = self.reader.readtext(img)
-            if(len(result)):
-                box, text, prob = result[0]
-                EasyOcrInfo[info] = text
-
-        return EasyOcrInfo 
     
-    
+    """
     def denoiseImage(self, img):
     
         img_denoise = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 15)
@@ -134,5 +168,14 @@ class Image2Text():
         
         #img_erosion = cv2.resize(img_erosion ,(img_erosion.shape[1]+10, img_erosion.shape[0]+5))
         return img_erosion
+    
+    def getonlyDigits(self,inp_str):
+        
+        print("Original String : " + inp_str) 
+        num = ""
+        for c in inp_str:
+            if c.isdigit():
+                num = num + c
+        return num
 
             
