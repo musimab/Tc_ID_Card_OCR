@@ -28,6 +28,7 @@ def countDictionaryItems(wordsList):
                 
                 if(key == "Surname"):
                     lenSurname = lenSurname + len(person_info[key])
+                
                 if(key == "Name"):
                     lenName = lenName + len(person_info[key])
                 
@@ -46,10 +47,43 @@ def countDictionaryItems(wordsList):
 
     print("lenTc:", lenTc )  
 
+
+
 def comparisionInCharacterLevel(dict_true, dict_predict):
-    pass
+  
+    tc_result = []
+    surname_result = []
+    name_result = []
+    date_result = []
+    
+    for dict_t, dict_p in zip(dict_true,  dict_predict):
+        for (img_name_t, person_info_t), (img_name_p, person_info_p) in zip(dict_t.items(), dict_p.items()):
+            
+            for truth, pred in zip(person_info_t["Tc"] , person_info_p["Tc"]):
+                tc_result.append(truth ==  pred)
+            
+            for truth, pred  in zip(person_info_t["Surname"] , person_info_p["Surname"]):
+                surname_result.append(truth ==  pred )            
+            
+            for truth, pred in zip(person_info_t["Name"] , person_info_p["Name"]):
+                name_result.append(truth == pred )
+            
+            for truth, pred in zip(person_info_t["DateofBirth"] , person_info_p["DateofBirth"]):
+                date_result.append(truth == pred )
+
+    
+    print("tc:", sum(tc_result),"/" ,len(tc_result), "%", 100.0 * sum(tc_result)/len(tc_result))
+
+    print("surname:", sum(surname_result),"/", len(surname_result), "%", 100.0 * sum(surname_result)/len(surname_result))
+
+    print("name:", sum(name_result),"/", len(name_result), "%", 100 * sum(name_result)/len(name_result) )
+
+    print("dateofbirth:", sum(date_result),"/", len(date_result), "%", 100 * sum(date_result)/len(date_result))
+
+
 
 def comparisionInWordLevel(dict_true, dict_predict):
+    
     tc_result = []
     surname_result = []
     name_result = []
@@ -60,30 +94,40 @@ def comparisionInWordLevel(dict_true, dict_predict):
     for dict_t, dict_p in zip(dict_true,  dict_predict):
         
         for (img_name_t, person_info_t), (img_name_p, person_info_p) in zip(dict_t.items(), dict_p.items()):
+            
             tc_result.append(person_info_t["Tc"] == person_info_p["Tc"])
             surname_result.append(person_info_t["Surname"] == person_info_p["Surname"])
             name_result.append(person_info_t["Name"] == person_info_p["Name"])
             date_result.append(person_info_t["DateofBirth"] == person_info_p["DateofBirth"])
 
   
-
     return tc_result, surname_result, name_result, date_result
+
+
 
 if '__main__' == __name__:
     
     wordsListTrue = loadDict(true_path)
     wordsListPred = loadDict(pred_path)
+
+    print(" Count prediction items")
+    countDictionaryItems(wordsListPred)
+    print(" Count true items")
+    countDictionaryItems(wordsListTrue)
+
     tc_result, surname_result, name_result, date_result = comparisionInWordLevel(wordsListTrue , wordsListPred)
+    
+    print("##### Word Level Comparision  #### ")
 
     print("tc result:", sum(tc_result)/len(tc_result))
     print("surname result:", sum(surname_result)/len(surname_result))
     print("name result:", sum(name_result)/ len(name_result))
     print("date_result:", sum(date_result)/len(date_result))
 
-    #countDictionaryItems(wordsListPred)
-    #print(" ")
-    #countDictionaryItems(wordsListTrue)
 
+    print("##### Character Level Comparision #### ")
+
+    comparisionInCharacterLevel(wordsListTrue , wordsListPred)
 
 
 
