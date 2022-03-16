@@ -1,7 +1,7 @@
 import json
 
 
-pred_path = "predictions_json/predicted_data.json"
+pred_path = "predictions_json/data.json"
 true_path = "true_json/data.json"
 
 def loadDict(path):  
@@ -110,14 +110,14 @@ if '__main__' == __name__:
     wordsListTrue = loadDict(true_path)
     wordsListPred = loadDict(pred_path)
 
-    print(" Count prediction items")
+    print("####  Count prediction items  #####")
     countDictionaryItems(wordsListPred)
-    print(" Count true items")
+    print("####  Count true items   ####")
     countDictionaryItems(wordsListTrue)
 
     tc_result, surname_result, name_result, date_result = comparisionInWordLevel(wordsListTrue , wordsListPred)
     
-    print("##### Word Level Comparision  #### ")
+    print("#####  Word Level Comparision   #### ")
 
     print("tc result:", sum(tc_result)/len(tc_result))
     print("surname result:", sum(surname_result)/len(surname_result))
@@ -125,7 +125,7 @@ if '__main__' == __name__:
     print("date_result:", sum(date_result)/len(date_result))
 
 
-    print("##### Character Level Comparision #### ")
+    print("#####  Character Level Comparision  #### ")
 
     comparisionInCharacterLevel(wordsListTrue , wordsListPred)
 

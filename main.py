@@ -156,15 +156,16 @@ if '__main__' == __name__:
         final_img = changeOrientationUntilFaceFound(img1)
         
         #final_img = utlis.correctPerspective(final_img)
-        
-        #final_img = cv2.resize(final_img, (480,640))
     
-
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
+        
         txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
         
         predicted_mask = model.predict(txt_heat_map)
-    
+
+        #plt.title("Predicted Mask")
+        #plt.imshow(predicted_mask, cmap='gray')
+        #plt.show()
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
         print("orientation_angle is ", orientation_angle)
         
@@ -177,7 +178,9 @@ if '__main__' == __name__:
             txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
             txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
             predicted_mask = model.predict(txt_heat_map)
-        
+            #plt.title("Predicted Mask")
+            #plt.imshow(predicted_mask, cmap='gray')
+            #plt.show()
         
         bbox_coordinates , box_centers = getBoxRegions(regions)
     
@@ -190,7 +193,6 @@ if '__main__' == __name__:
         centers_ratio_all = getCenterRatios(final_img, box_centers) 
     
         matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
-        
         
         new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
         

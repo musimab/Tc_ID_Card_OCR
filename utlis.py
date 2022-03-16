@@ -117,42 +117,25 @@ def correctPerspective(img):
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(gray, (5,5), 1)
-    imgCanny = cv2.Canny(imgBlur,10,100)
-    #ret, thresh  = cv2.threshold(gray , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    imgCanny = cv2.Canny(imgBlur,30,50)
+    ret, thresh  = cv2.threshold(gray , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     #thresh = cv2.adaptiveThreshold( gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     
-    kernel = np.ones((5,5), np.uint8)
-    img_dilation = cv2.dilate( imgCanny, kernel, iterations=2)
+    kernel = np.ones((3,5), np.uint8)
+    img_dilation = cv2.dilate( thresh, kernel, iterations=1)
     img_erosion = cv2.erode(img_dilation , kernel, iterations=1)
 
     cntrs ,hiarchy = cv2.findContours(img_erosion , cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    areas = [cv2.contourArea(c) for c in cntrs]
-    max_index = np.argmax(areas)
-    cnt = cntrs[max_index]
-    x,y,w,h = cv2.boundingRect(cnt)
-
-    #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),3)
-    #c = max(cntrs, key = cv2.contourArea)
-    #x,y,w,h = cv2.boundingRect(c)
-    #cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),5)
-    
-    rotrect = cv2.minAreaRect(cnt)
-    box = cv2.boxPoints(rotrect)
-    box = np.int0(box)
+    #areas = [cv2.contourArea(c) for c in cntrs]
+    #max_index = np.argmax(areas)
+    #cnt = cntrs[max_index]
+    cnt_max = max(cntrs, key = cv2.contourArea)
+ 
+    approx = cv2.approxPolyDP(cnt_max, 0.02 * cv2.arcLength(cnt_max, True), True)
   
-    angle = rotrect[-1]
-
-    if angle < -45:
-        angle = -(90 + angle)
-    else:
-        angle = -angle
-    #print("Angle:", angle)
     (heigth_q, width_q) = img.shape[:2]
-    (cx, cy) = (width_q // 2, heigth_q // 2)
     
-    #rotated_img = rotate_bound(img, angle)
-    #new_bbox = rotate_bbox(box, cx, cy,  heigth_q, width_q, angle)
-    warped_img = warpImg(img, box,  width_q, heigth_q)
+    warped_img = warpImg(img, approx ,  width_q, heigth_q)
     
     plt.title("rotated image")
     plt.imshow(img)
@@ -190,6 +173,7 @@ def reorder(myPoints):
 def warpImg(img, points, w, h):
 
     points = reorder(points)
+    #print("point after reorder:", points)
     pts1 = np.float32(points)
     pts2 = np.float32([[0,0], [w,0], [0,h], [w,h]])
     matrix =  cv2.getPerspectiveTransform(pts1, pts2)
