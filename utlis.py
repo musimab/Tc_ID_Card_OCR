@@ -127,12 +127,15 @@ def getOrientation(pts, img):
     return np.rad2deg(angle)
 
 def correctPerspective(img):
+    """
+    it takes the original image and crop 
+    the id card with perspective transform
+    """
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(gray, (5,5), 1)
     imgCanny = cv2.Canny(imgBlur,30,50)
     ret, thresh  = cv2.threshold(gray , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    #thresh = cv2.adaptiveThreshold( gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     
     kernel = np.ones((3,5), np.uint8)
     img_dilation = cv2.dilate( thresh, kernel, iterations=1)
@@ -150,7 +153,7 @@ def correctPerspective(img):
     
     warped_img = warpImg(img, approx ,  width_q, heigth_q)
     
-    plt.title("rotated image")
+    plt.title("original image")
     plt.imshow(img)
     plt.show()
 
