@@ -21,7 +21,11 @@ def displayMachedBoxes(img, new_bboxes):
     return img
 
 def createHeatMapAndBoxCoordinates(image):
-    
+    """
+    takes the ID image and sends it to the craft model. 
+    Craft returns the character density map and
+    the box coordinates of the characters in the image.
+    """
     input_image = image.copy()
     craft = Craft(output_dir='outputs', crop_type="poly", cuda=True)
     prediction_result = craft.detect_text(input_image)
@@ -51,6 +55,13 @@ def readBBoxCordinatesAndCenters(coordinates_txt):
     return np.array(boxes), np.array(centers)
 
 def findOrientationofLines(mask):
+
+    """
+    The masks of 4 regions were found at the Unet output, 
+    the orientation angles of the largest region within 
+    these lines are determined and the orientation angle in degrees is returned.
+
+    """
     cntrs ,hiarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if(len(cntrs) == 0):
         return None
@@ -64,7 +75,9 @@ def findOrientationofLines(mask):
     return angle_pca
 
 def rotateImage(orientation_angle, final_img):
-    
+    """
+    The image is rotated according to the given angle
+    """
     (h, w) = final_img.shape[:2]
     (cX, cY) = (w // 2, h // 2)
 

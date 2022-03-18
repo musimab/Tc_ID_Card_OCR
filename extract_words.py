@@ -53,7 +53,12 @@ class SaveOcrInfo:
 
 
 class Image2Text():
-    
+    """
+    There are 3 types of ocr methods. 
+    Retrieves original image and target box coordinates 
+    (id no, first name, last name, date of birth) 
+    and saves txt outputs in json format
+    """
     def __init__(self, ocr_method, lw_thresh = 3, up_thresh = 3, denoising = False, file_name=None) -> None:
         
         self.ocr_method = ocr_method
@@ -106,7 +111,9 @@ class Image2Text():
 
     
     def easyOcr(self, img, bbox):
-
+        """
+        it saves the txt outputs as a json format
+        """
         self.cropRoi(img, bbox)
         id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
 
@@ -156,6 +163,9 @@ class Image2Text():
     
     """
     def denoiseImage(self, img):
+        """
+        if denoise is available make denosing
+        """
     
         img_denoise = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 15)
         imgGray = cv2.cvtColor(img_denoise , cv2.COLOR_BGR2GRAY)
@@ -170,6 +180,7 @@ class Image2Text():
         return img_erosion
     
     def getonlyDigits(self,inp_str):
+        # only return digits 
         
         print("Original String : " + inp_str) 
         num = ""

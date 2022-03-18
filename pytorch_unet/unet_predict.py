@@ -123,6 +123,13 @@ class UNET(nn.Module):
         return x
 
 class UnetModel:
+    """
+    The Unet model takes the character density map image
+    and returns the masks of the ID card number, first name, 
+    surname and date of birth regions on this image.
+    The Unet model was trained with 3 different backbones, 
+    the most successful of which was obtained from the resnet34 backbone.
+    """
 
     def __init__(self, model_name, device):
         self.device = device

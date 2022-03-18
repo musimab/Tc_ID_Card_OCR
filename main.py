@@ -10,7 +10,11 @@ import os
 
 
 def getCenterRatios(img, centers):
-
+    """
+    Calculates the position of the centers of all boxes 
+    in the ID card image and Unet Mask relative to the width and height of the image 
+    and returns these ratios as a numpy array.
+    """
     if(len(img.shape) == 2):
         img_h, img_w = img.shape
         ratios = np.zeros_like(centers, dtype=np.float32)
@@ -26,6 +30,12 @@ def getCenterRatios(img, centers):
 
 
 def matchCenters(ratios1, ratios2):
+    """
+    It takes the ratio of the centers of the regions 
+    included in the mask and CRAFT result on the image 
+    and maps them according to the absolute distance. 
+    Returns the index of the centers with the lowest absolute difference accordingly
+    """
 
     bbb0 = np.zeros_like(ratios2)
     bbb1 = np.zeros_like(ratios2)
@@ -57,9 +67,12 @@ def matchCenters(ratios1, ratios2):
     return np.squeeze(arg_min_b0), np.squeeze(arg_min_b1), np.squeeze(arg_min_b2),np.squeeze(arg_min_b3)         
 
 
-def getCenterOfMasks(thrsh):
+def getCenterOfMasks(mask):
+    """
+    Find centers of 4 boxes in mask with unet model output and return them
+    """
     
-    thresh = thrsh.copy()
+    thresh = mask.copy()
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
     boundingBoxes = [cv2.boundingRect(c) for c in contours]
@@ -72,11 +85,11 @@ def getCenterOfMasks(thrsh):
     for contour in cnts:
         (x,y,w,h) = cv2.boundingRect(contour)
         if w > 10 and h > 5:
-            cv2.rectangle(thrsh, (x,y), (x+w,y+h), (255, 0, 0), 2)
+            cv2.rectangle(mask, (x,y), (x+w,y+h), (255, 0, 0), 2)
             cX = round(int(x) + w/2.0)
             cY = round(int(y) + h/2.0)
             detected_centers.append((cX, cY))
-            cv2.circle(thrsh, (cX, cY), 7, (255, 0, 0), -1)
+            cv2.circle(mask, (cX, cY), 7, (255, 0, 0), -1)
             indx = indx + 1
         if(indx == 4):
             break
@@ -87,6 +100,11 @@ def getCenterOfMasks(thrsh):
 
 
 def changeOrientationUntilFaceFound(image):
+    """
+    It takes the image and sends it to the face detection model 
+    by rotating it at 15 degree intervals and returning the original image 
+    according to that angle which has the highest probability of faces in the image.
+    """
     
     img = image.copy()
     face_conf = []
@@ -104,6 +122,10 @@ def changeOrientationUntilFaceFound(image):
     return rotated_img
 
 def getBoxRegions(regions):
+    """
+    The coordinates of the texts on the id card are converted 
+    to x, w, y, h type and the centers and coordinates of these boxes are returned.
+    """
     boxes = []
     centers = []
     for box_region in regions:
@@ -197,6 +219,7 @@ if '__main__' == __name__:
         new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
         
         ocrResult = Image2Text(ocr_method="Easy", lw_thresh=5, up_thresh=5, denoising=False, file_name=filename)
+        
         PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
         
         for id, val in PersonInfo.items():

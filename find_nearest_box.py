@@ -37,7 +37,13 @@ class NearestBox:
         return right_centers, left_centers, right_centers_box_full, left_centers_box_full
 
     def searchNearestBoundingBoxes(self, box_coordinates, box_indexes, img):
-        
+        """
+        Retrieves the coordinates of the boxes in the ID card image 
+        and the indices of the corresponding regions matched with the mask image. 
+        If there are any boxes along a certain Euclidian distance to 
+        the right or left of the target boxes, it detects them and updates and 
+        returns the coordinates of these boxes.
+        """
         right_centers, left_centers, right_centers_box_full, left_centers_box_full = self.getRightAndLeftBoxCenters(box_coordinates, box_indexes)
         
         box1 = box_coordinates[box_indexes[0]]
