@@ -4,10 +4,7 @@ import pytesseract
 import numpy as np
 from craft_text_detector import Craft
 from math import atan2, cos, sin, sqrt, pi
-
-modelFile = "model/res10_300x300_ssd_iter_140000.caffemodel"
-configFile = "model/deploy.prototxt.txt"
-FaceNet = cv2.dnn.readNetFromCaffe(configFile, modelFile)
+import os
 
 def displayMachedBoxes(img, new_bboxes):
     
@@ -255,18 +252,12 @@ def displayAllBoxes(img, rect):
     
     return img
 
-
-def detectFace(img):
-
-    h, w = img.shape[:2]
-    blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0,
-    (300, 300), (104.0, 117.0, 123.0))
-    FaceNet.setInput(blob)
-    faces = FaceNet.forward()
+def load_images_from_folder(folder):
+    images = []
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder,filename))
+        print("filename:", filename)
+        if img is not None:
+            images.append(img)
     
-    for i in range(faces.shape[2]):
-        confidence = faces[0, 0, i, 2]
-        if confidence > 0.6:
-            print("Confidence:", confidence)
-            return confidence
-        return 0
+    return images

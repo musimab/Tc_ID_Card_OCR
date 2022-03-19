@@ -182,7 +182,7 @@ class Image2Text():
     def getonlyDigits(self,inp_str):
         # only return digits 
         
-        print("Original String : " + inp_str) 
+        #print("Original String : " + inp_str) 
         num = ""
         for c in inp_str:
             if c.isdigit():
