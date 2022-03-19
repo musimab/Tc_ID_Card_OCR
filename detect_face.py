@@ -5,7 +5,11 @@ from matplotlib import pyplot as plt
 
 
 class FindFaceID:
-    
+    """
+        It takes the image and sends it to the face detection model 
+        by rotating it at 15 degree intervals and returning the original image 
+        according to that angle which has the highest probability of faces in the image.
+    """
     def __init__(self, detection_method = "ssd", rot_interval = 30) -> None:
         self.method  = detection_method
         self.rot_interval = rot_interval
@@ -16,11 +20,7 @@ class FindFaceID:
         self.FaceNet = cv2.dnn.readNetFromCaffe(self.configFile, self.modelFile)
     
     def changeOrientationUntilFaceFound(self,image):
-        """
-        It takes the image and sends it to the face detection model 
-        by rotating it at 15 degree intervals and returning the original image 
-        according to that angle which has the highest probability of faces in the image.
-        """
+
 
         if(self.method == "dlib"):
             rotated_image = self.__searchFaceDlib(image)
@@ -52,8 +52,6 @@ class FindFaceID:
             img_rotated = self.__rotate_bound(img, angle)
             is_face_available = self.__findFaceDlib(img_rotated)
             if(is_face_available):
-                plt.imshow(img_rotated)
-                plt.show()
                 return img_rotated
         
 
@@ -117,6 +115,6 @@ class FindFaceID:
         for i in range(faces.shape[2]):
             confidence = faces[0, 0, i, 2]
             if confidence > 0.6:
-                print("Confidence:", confidence)
+                #print("Confidence:", confidence)
                 return confidence
             return 0

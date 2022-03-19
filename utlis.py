@@ -117,8 +117,8 @@ def getOrientation(pts, img):
     cv2.circle(img, cntr, 3, (255, 0, 255), 2)
     p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
     p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0])
-    drawAxis(img, cntr, p1, (0, 255, 0), 1)
-    drawAxis(img, cntr, p2, (255, 255, 0), 5)
+    #drawAxis(img, cntr, p1, (0, 255, 0), 1)
+    #drawAxis(img, cntr, p2, (255, 255, 0), 5)
     angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
     
     return np.rad2deg(angle)
@@ -131,14 +131,14 @@ def correctPerspective(img):
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(gray, (5,5), 1)
-    imgCanny = cv2.Canny(imgBlur,30,50)
-    ret, thresh  = cv2.threshold(gray , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    imgCanny = cv2.Canny(imgBlur,80,80)
+    ret, thresh  = cv2.threshold(imgCanny , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     
-    kernel = np.ones((3,5), np.uint8)
+    kernel = np.ones((5,5), np.uint8)
     img_dilation = cv2.dilate( thresh, kernel, iterations=1)
     img_erosion = cv2.erode(img_dilation , kernel, iterations=1)
 
-    cntrs ,hiarchy = cv2.findContours(img_erosion , cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cntrs ,hiarchy = cv2.findContours(img_erosion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     #areas = [cv2.contourArea(c) for c in cntrs]
     #max_index = np.argmax(areas)
     #cnt = cntrs[max_index]
@@ -150,18 +150,18 @@ def correctPerspective(img):
     
     warped_img = warpImg(img, approx ,  width_q, heigth_q)
     
-    plt.title("original image")
-    plt.imshow(img)
-    plt.show()
+    #plt.title("original image")
+    #plt.imshow(img)
+    #plt.show()
 
     
-    plt.title("processed image")
-    plt.imshow(img_erosion)
-    plt.show()
+    #plt.title("processed image")
+    #plt.imshow(img_erosion)
+    #plt.show()
 
-    plt.title("warped image")
-    plt.imshow(warped_img)
-    plt.show()
+    #plt.title("warped image")
+    #plt.imshow(warped_img)
+    #plt.show()
     #cv2.imwrite("warped_img.jpg", warped_img)
 
 

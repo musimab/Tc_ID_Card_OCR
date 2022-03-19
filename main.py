@@ -68,31 +68,36 @@ def matchCenters(ratios1, ratios2):
     return np.squeeze(arg_min_b0), np.squeeze(arg_min_b1), np.squeeze(arg_min_b2),np.squeeze(arg_min_b3)         
 
 
+
 def getCenterOfMasks(thresh):
     """
     Find centers of 4 boxes in mask from top to bottom with unet model output and return them
     """
     
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    #sort the contours according to size from min to max
+    contours = sorted(contours, key = cv2.contourArea, reverse=False)
     
-    boundingBoxes = [cv2.boundingRect(c) for c in contours]
-    (cnts, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes),key=lambda b:b[1][1], reverse=False))
+    contours = contours[-4:] # get 4 biggest contour
 
-    print("len of countours:", len(cnts))
+    #print("size of cnt", [cv2.contourArea(cnt) for cnt in contours])
+    boundingBoxes = [cv2.boundingRect(c) for c in contours]
+    
+    # Sort to 4 biggest contours from top to bottom
+    (cnts, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes),key=lambda b:b[1][1], reverse=False))
     
     detected_centers = []
-    indx = 0
+    #indx = 0
     for contour in cnts:
         (x,y,w,h) = cv2.boundingRect(contour)
-        if w > 10 and h > 5:
-            #cv2.rectangle(thresh, (x,y), (x+w,y+h), (255, 0, 0), 2)
-            cX = round(int(x) + w/2.0)
-            cY = round(int(y) + h/2.0)
-            detected_centers.append((cX, cY))
-            #cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
-            indx = indx + 1
-        if(indx == 4):
-            break
+        #cv2.rectangle(thresh, (x,y), (x+w,y+h), (255, 0, 0), 2)
+        cX = round(int(x) + w/2.0)
+        cY = round(int(y) + h/2.0)
+        detected_centers.append((cX, cY))
+        #cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
+        #indx = indx + 1
+        #if(indx == 4):
+        #    break
     print("len of detected centers:", len(detected_centers))
     #plt.imshow(mask, cmap='gray')
     #plt.show()
@@ -127,22 +132,23 @@ def getBoxRegions(regions):
 
 if '__main__' == __name__:
     
-    
+    Folder = "tc"
     ORI_THRESH = 3
     model = UnetModel("resnet34", "cuda")
     nearestBox = NearestBox(distance_thresh = 10, draw_line=True)
     findFaceID = FindFaceID(detection_method = "ssd", rot_interval= 30)
     
-    folder = "rot_images"
+    
     start = time.time()
-    for filename in sorted(os.listdir(folder)):
+
+    for filename in sorted(os.listdir(Folder)):
         
-        img = cv2.imread(os.path.join(folder,filename))
+        img = cv2.imread(os.path.join(Folder,filename))
         img1 = cv2.cvtColor(img , cv2.COLOR_BGR2RGB)
   
         final_img = findFaceID.changeOrientationUntilFaceFound(img1)
         
-        #final_img = utlis.correctPerspective(final_img)
+        final_img = utlis.correctPerspective(final_img)
     
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
         
@@ -185,19 +191,19 @@ if '__main__' == __name__:
         for id, val in PersonInfo.items():
             print(id,':' ,val)
         
-        utlis.displayMachedBoxes(final_img, new_bboxes)
+        #utlis.displayMachedBoxes(final_img, new_bboxes)
         
         #utlis.displayAllBoxes(final_img, bbox_coordinates)
         
-        plt.figure()
-        plt.title("final_img")
-        plt.imshow(final_img)
-        plt.show()
+      
+        #plt.title("final_img")
+        #plt.imshow(final_img)
+        #plt.show()
     
-        plt.figure()
-        plt.title("Predicted Mask")
-        plt.imshow(predicted_mask, cmap='gray')
-        plt.show()
+       
+        #plt.title("Predicted Mask")
+        #plt.imshow(predicted_mask, cmap='gray')
+        #plt.show()
     
     end = time.time()
     print("Execution Time:", (end -start))
