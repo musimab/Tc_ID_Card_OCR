@@ -75,19 +75,20 @@ def getCenterOfMasks(thresh):
     """
     
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    #sort the contours according to size from min to max
+    
+    # Sort contours by size from smallest to largest
     contours = sorted(contours, key = cv2.contourArea, reverse=False)
     
-    contours = contours[-4:] # get 4 biggest contour
+    contours = contours[-4:] # get the 4 largest contours
 
     #print("size of cnt", [cv2.contourArea(cnt) for cnt in contours])
     boundingBoxes = [cv2.boundingRect(c) for c in contours]
     
-    # Sort to 4 biggest contours from top to bottom
+    # Sort the 4 largest regions from top to bottom so that we filter the relevant regions
     (cnts, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes),key=lambda b:b[1][1], reverse=False))
     
     detected_centers = []
-    #indx = 0
+ 
     for contour in cnts:
         (x,y,w,h) = cv2.boundingRect(contour)
         #cv2.rectangle(thresh, (x,y), (x+w,y+h), (255, 0, 0), 2)
@@ -95,12 +96,7 @@ def getCenterOfMasks(thresh):
         cY = round(int(y) + h/2.0)
         detected_centers.append((cX, cY))
         #cv2.circle(thresh, (cX, cY), 7, (255, 0, 0), -1)
-        #indx = indx + 1
-        #if(indx == 4):
-        #    break
-    #print("len of detected centers:", len(detected_centers))
-    #plt.imshow(mask, cmap='gray')
-    #plt.show()
+
     return np.array(detected_centers)
 
 
