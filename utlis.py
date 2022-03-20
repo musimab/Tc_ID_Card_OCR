@@ -132,9 +132,9 @@ def correctPerspective(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(gray, (5,5), 1)
     imgCanny = cv2.Canny(imgBlur,80,80)
-    ret, thresh  = cv2.threshold(imgCanny , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    ret, thresh  = cv2.threshold(imgBlur , 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     
-    kernel = np.ones((5,5), np.uint8)
+    kernel = np.ones((3,3), np.uint8)
     img_dilation = cv2.dilate( thresh, kernel, iterations=1)
     img_erosion = cv2.erode(img_dilation , kernel, iterations=1)
 

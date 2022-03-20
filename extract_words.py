@@ -121,7 +121,7 @@ class Image2Text():
             result = self.reader.readtext(img)
             if(len(result)):
                 box, text, prob = result[0]
-                self.IdCardInfo.EasyOcrInfo[info] = text
+                self.IdCardInfo.EasyOcrInfo[info] = text.upper()
         
         self.IdCardInfo.EasyOcrInfo["DateofBirth"] = self.getonlyDigits(self.IdCardInfo.EasyOcrInfo["DateofBirth"])
         

@@ -71,7 +71,8 @@ def comparisionInCharacterLevel(dict_true, dict_predict):
             for truth, pred in zip(person_info_t["DateofBirth"] , person_info_p["DateofBirth"]):
                 date_result.append(truth == pred )
 
-    
+    print(" ")
+    print("#####  Character Level Comparision  #### ")
     print("tc:", sum(tc_result),"/" ,len(tc_result), "%", 100.0 * sum(tc_result)/len(tc_result))
 
     print("surname:", sum(surname_result),"/", len(surname_result), "%", 100.0 * sum(surname_result)/len(surname_result))
@@ -79,7 +80,7 @@ def comparisionInCharacterLevel(dict_true, dict_predict):
     print("name:", sum(name_result),"/", len(name_result), "%", 100 * sum(name_result)/len(name_result) )
 
     print("dateofbirth:", sum(date_result),"/", len(date_result), "%", 100 * sum(date_result)/len(date_result))
-
+    print(" ")
 
 
 def comparisionInWordLevel(dict_true, dict_predict):
@@ -99,9 +100,14 @@ def comparisionInWordLevel(dict_true, dict_predict):
             surname_result.append(person_info_t["Surname"] == person_info_p["Surname"])
             name_result.append(person_info_t["Name"] == person_info_p["Name"])
             date_result.append(person_info_t["DateofBirth"] == person_info_p["DateofBirth"])
-
-  
-    return tc_result, surname_result, name_result, date_result
+    
+    print(" ")
+    print("#####  Word Level Comparision   #### ")
+    print("tc result:",  sum(tc_result), "/", len(tc_result), "%", 100*sum(tc_result)/len(tc_result))
+    print("surname result:", sum(surname_result), "/", len(surname_result), "%", 100*sum(surname_result)/len(surname_result))
+    print("name result:", sum(name_result), "/", len(name_result) ,"%", 100*sum(name_result)/ len(name_result))
+    print("date_result:", sum(date_result), "/", len(date_result), "%", 100*sum(date_result)/len(date_result))
+    print(" ")
 
 
 
@@ -115,20 +121,10 @@ if '__main__' == __name__:
     print("####  Count true items   ####")
     countDictionaryItems(wordsListTrue)
 
-    tc_result, surname_result, name_result, date_result = comparisionInWordLevel(wordsListTrue , wordsListPred)
-    
-    print("#####  Word Level Comparision   #### ")
-
-    print("tc result:", sum(tc_result)/len(tc_result))
-    print("surname result:", sum(surname_result)/len(surname_result))
-    print("name result:", sum(name_result)/ len(name_result))
-    print("date_result:", sum(date_result)/len(date_result))
-
-
-    print("#####  Character Level Comparision  #### ")
+    comparisionInWordLevel(wordsListTrue , wordsListPred)
 
     comparisionInCharacterLevel(wordsListTrue , wordsListPred)
-
+    
 
 
             

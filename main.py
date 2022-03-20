@@ -98,7 +98,7 @@ def getCenterOfMasks(thresh):
         #indx = indx + 1
         #if(indx == 4):
         #    break
-    print("len of detected centers:", len(detected_centers))
+    #print("len of detected centers:", len(detected_centers))
     #plt.imshow(mask, cmap='gray')
     #plt.show()
     return np.array(detected_centers)
@@ -187,10 +187,10 @@ if '__main__' == __name__:
         ocrResult = Image2Text(ocr_method="Easy", lw_thresh = 5, up_thresh= 5, denoising=False, file_name=filename)
         
         PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
-        
+        print(" ")
         for id, val in PersonInfo.items():
             print(id,':' ,val)
-        
+        print(" ")
         #utlis.displayMachedBoxes(final_img, new_bboxes)
         
         #utlis.displayAllBoxes(final_img, bbox_coordinates)
