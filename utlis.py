@@ -10,12 +10,12 @@ def displayMachedBoxes(img, new_bboxes):
     
     for box in new_bboxes:
         x1, w, y1, h = box
-        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,255), 2)
+        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (0,0,255), 3)
         cX = round(int(x1) + w/2.0)
         cY = round(int(y1) + h/2.0)
         cv2.circle(img, (cX, cY), 7, (0, 255, 255), -1)
-        
-    return img
+    
+    
 
 def createHeatMapAndBoxCoordinates(image):
     """
@@ -245,10 +245,10 @@ def displayAllBoxes(img, rect):
     
     for rct in rect:
         x1, w, y1, h = rct
-        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,255,0), 2)
+        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (0,255,0), 1)
         cX = round(int(x1) + w/2.0)
         cY = round(int(y1) + h/2.0)
-        cv2.circle(img, (cX, cY), 7, (0, 255, 0), -1)
+        cv2.circle(img, (cX, cY), 3, (0, 255, 0), -1)
     
     return img
 

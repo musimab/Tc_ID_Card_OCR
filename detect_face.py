@@ -74,7 +74,7 @@ class FindFaceID:
         face_confidence = np.array(face_conf)
         face_arg_max = np.argmax(face_confidence, axis=0)
         angle_max = face_confidence[face_arg_max[0]][1]
-        print("Maximum face confidence score at angle: ", angle_max)
+        #print("Maximum face confidence score at angle: ", angle_max)
         rotated_img = self.__rotate_bound(image, angle_max)
         
         return rotated_img

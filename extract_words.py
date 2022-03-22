@@ -7,21 +7,9 @@ from matplotlib import pyplot as plt
 import json
 import os
 
-TesseractOcrInfo = {
+TesseractOcrInfo = {}
 
-        "Tc": ' ',
-        "Surname": ' ',
-        "Name": ' ',
-        "DateofBirth":' '
-}
-
-KerasOcrInfo = {
-
-        "Tc": ' ',
-        "Surname": ' ',
-        "Name": ' ',
-        "DateofBirth":' '
-}
+KerasOcrInfo = {}
 
 CardInfo = {}
 

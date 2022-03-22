@@ -121,17 +121,18 @@ def getBoxRegions(regions):
         bbox = (int(x), w, int(y), h)
         boxes.append(bbox)
 
-    print("number of boxes", len(boxes))
+    #print("number of detected boxes", len(boxes))
     return np.array(boxes), np.array(centers)
 
 
 
 if '__main__' == __name__:
     
-    Folder = "tc"
+    Folder = "deneme_testr"
     ORI_THRESH = 3
+
     model = UnetModel("resnet34", "cuda")
-    nearestBox = NearestBox(distance_thresh = 10, draw_line=True)
+    nearestBox = NearestBox(distance_thresh = 45, draw_line=False)
     findFaceID = FindFaceID(detection_method = "ssd", rot_interval= 30)
     
     
@@ -153,7 +154,7 @@ if '__main__' == __name__:
         predicted_mask = model.predict(txt_heat_map)
 
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
-        print("orientation_angle is ", orientation_angle)
+        #print("orientation_angle is ", orientation_angle)
         
         if ( abs(orientation_angle) > ORI_THRESH ):
             
@@ -187,19 +188,19 @@ if '__main__' == __name__:
         for id, val in PersonInfo.items():
             print(id,':' ,val)
         print(" ")
-        #utlis.displayMachedBoxes(final_img, new_bboxes)
+        utlis.displayMachedBoxes(final_img, new_bboxes)
         
-        #utlis.displayAllBoxes(final_img, bbox_coordinates)
+        utlis.displayAllBoxes(final_img, bbox_coordinates)
         
       
-        #plt.title("final_img")
-        #plt.imshow(final_img)
-        #plt.show()
+        plt.title("final_img")
+        plt.imshow(final_img)
+        plt.show()
     
        
-        #plt.title("Predicted Mask")
-        #plt.imshow(predicted_mask, cmap='gray')
-        #plt.show()
+        plt.title("Predicted Mask")
+        plt.imshow(predicted_mask, cmap='gray')
+        plt.show()
     
     end = time.time()
     print("Execution Time:", (end -start))
