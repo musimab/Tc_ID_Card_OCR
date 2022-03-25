@@ -104,20 +104,20 @@ class Image2Text():
         """
         self.cropRoi(img, bbox)
         id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
-
+        saveOcrInfo = SaveOcrInfo()
         for info, img  in zip(id_infos, self.crop_img_names):
             result = self.reader.readtext(img)
             if(len(result)):
                 box, text, prob = result[0]
-                self.IdCardInfo.EasyOcrInfo[info] = text.upper()
+                saveOcrInfo.EasyOcrInfo[info] = text.upper()
         
-        self.IdCardInfo.EasyOcrInfo["DateofBirth"] = self.getonlyDigits(self.IdCardInfo.EasyOcrInfo["DateofBirth"])
+        saveOcrInfo.EasyOcrInfo["DateofBirth"] = self.getonlyDigits(saveOcrInfo.EasyOcrInfo["DateofBirth"])
+       
+        CardInfo[self.img_name] = saveOcrInfo.EasyOcrInfo
+        saveOcrInfo.saveDict(CardInfo)
         
-        CardInfo[self.img_name] = self.IdCardInfo.EasyOcrInfo
-        self.IdCardInfo.saveDict(CardInfo)
         
-        
-        return self.IdCardInfo.EasyOcrInfo
+        return saveOcrInfo.EasyOcrInfo
 
 
     def tesserctOcr(self,img, bbox):

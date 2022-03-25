@@ -132,7 +132,7 @@ if '__main__' == __name__:
     ORI_THRESH = 3
 
     model = UnetModel("resnet34", "cuda")
-    nearestBox = NearestBox(distance_thresh = 45, draw_line=False)
+    nearestBox = NearestBox(distance_thresh = 50, draw_line=False)
     findFaceID = FindFaceID(detection_method = "ssd", rot_interval= 30)
     
     
@@ -146,15 +146,19 @@ if '__main__' == __name__:
         final_img = findFaceID.changeOrientationUntilFaceFound(img1)
         
         final_img = utlis.correctPerspective(final_img)
+        plt.imsave("crop_img.jpg", final_img)
     
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
+        #plt.imsave("txt_heat_map.jpg",txt_heat_map)
+        cv2.imwrite("txt_heat_map.jpg", txt_heat_map)
         
         txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
         
         predicted_mask = model.predict(txt_heat_map)
+        plt.imsave("mask_first.jpg", predicted_mask)
 
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
-        #print("orientation_angle is ", orientation_angle)
+        print("orientation_angle is ", orientation_angle)
         
         if ( abs(orientation_angle) > ORI_THRESH ):
             
@@ -180,7 +184,7 @@ if '__main__' == __name__:
         matched_box_indexes = matchCenters(centers_ratio_mask , centers_ratio_all)
         
         new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
-        
+       
         ocrResult = Image2Text(ocr_method="Easy", lw_thresh = 5, up_thresh= 5, denoising=False, file_name=filename)
         
         PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
@@ -195,11 +199,15 @@ if '__main__' == __name__:
       
         plt.title("final_img")
         plt.imshow(final_img)
+        plt.imsave("final_imgp.jpg",final_img)
+        #cv2.imwrite("predicted_mask.jpg", predicted_mask)
         plt.show()
     
        
         plt.title("Predicted Mask")
         plt.imshow(predicted_mask, cmap='gray')
+        #plt.imsave("predicted_mask.jpg", predicted_mask)
+        cv2.imwrite("predicted_mask.jpg", predicted_mask)
         plt.show()
     
     end = time.time()

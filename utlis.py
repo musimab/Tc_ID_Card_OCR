@@ -150,19 +150,21 @@ def correctPerspective(img):
     
     warped_img = warpImg(img, approx ,  width_q, heigth_q)
     
-    #plt.title("original image")
-    #plt.imshow(img)
-    #plt.show()
+    plt.title("original image")
+    plt.imshow(img)
+    plt.show()
+    plt.imsave("ori_img.jpg", img)
 
     
-    #plt.title("processed image")
-    #plt.imshow(img_erosion)
-    #plt.show()
+    plt.title("processed image")
+    plt.imshow(img_erosion)
+    plt.show()
+    plt.imsave("img_erosion.jpg", img_erosion)
 
-    #plt.title("warped image")
-    #plt.imshow(warped_img)
-    #plt.show()
-    #cv2.imwrite("warped_img.jpg", warped_img)
+    plt.title("warped image")
+    plt.imshow(warped_img)
+    plt.show()
+    plt.imsave("warped_img.jpg", warped_img)
 
 
     return warped_img
@@ -245,7 +247,7 @@ def displayAllBoxes(img, rect):
     
     for rct in rect:
         x1, w, y1, h = rct
-        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (0,255,0), 1)
+        cv2.rectangle(img, (x1, y1), (x1+w, y1+h), (255,0,0), 1)
         cX = round(int(x1) + w/2.0)
         cY = round(int(y1) + h/2.0)
         cv2.circle(img, (cX, cY), 3, (0, 255, 0), -1)

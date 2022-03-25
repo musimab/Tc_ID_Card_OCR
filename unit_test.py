@@ -7,7 +7,7 @@ import cv2
 class Test_Nearest_Box(unittest.TestCase):
     
     def setUp(self):
-        self.Nearest_Box = NearestBox(distance_thresh=1,draw_line=False)
+        self.Nearest_Box = NearestBox(distance_thresh=3,draw_line=False)
 
         self.box_coordinates2 = np.random.randint(1,100, size=(20,4))
                              

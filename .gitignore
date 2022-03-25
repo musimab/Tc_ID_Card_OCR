@@ -10,3 +10,6 @@ images*
 __pycache__*
 tc*
 *.json
+tc*
+outputs*
+

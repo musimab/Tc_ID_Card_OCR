@@ -7,6 +7,7 @@ class NearestBox:
     def __init__(self, distance_thresh, draw_line = False) -> None:
         self.draw_line = draw_line
         self.DISTANCE_THRESH = distance_thresh
+        self.target_box_cordinates = None
 
     def getRightAndLeftCentersforAllBoxes(self, box_coordinates):
         """
@@ -25,7 +26,15 @@ class NearestBox:
             left_centers_box_full[i]  = (box[0], round(box[2]+ box[3]/2))
         
         return  right_centers_box_full, left_centers_box_full
-    
+
+
+    def setTargetBoxCordinates(self, target_box_cord):
+        self.target_box_cordinates = target_box_cord
+
+    def getTargetBoxCordinates(self):
+        return self.target_box_cordinates
+
+
     def getRightAndLeftCentersforTargetBoxes(self, box_coordinates, box_indexes):
         """
         it takes box coordinates that are generated from craft and matched box indexes
@@ -70,6 +79,14 @@ class NearestBox:
         box3 = box_coordinates[box_indexes[2]]
         box4 = box_coordinates[box_indexes[3]]
 
+        target_box_cordinates = {}
+        target_box_cordinates["box1"] = box1
+        target_box_cordinates["box2"] = box2
+        target_box_cordinates["box3"] = box3
+        target_box_cordinates["box4"] = box4
+
+        self.setTargetBoxCordinates(target_box_cordinates)
+
         right_centers_distance1 = np.zeros((len(right_centers_box_full), 1))
         right_centers_distance2 = np.zeros((len(right_centers_box_full), 1))
         right_centers_distance3 = np.zeros((len(right_centers_box_full), 1))
@@ -100,210 +117,53 @@ class NearestBox:
         box3_r_neighbours = np.where(np.all(right_centers_distance3>0, axis=1 ) & np.all(right_centers_distance3 < [self.DISTANCE_THRESH], axis=1))
         box4_r_neighbours = np.where(np.all(right_centers_distance4>0, axis=1 ) & np.all(right_centers_distance4 < [self.DISTANCE_THRESH], axis=1))
 
-       
-        if(len(box1_r_neighbours[0])):
-            box_index = 0
-            box1_r_indexes = np.squeeze(box1_r_neighbours)
-            print("size of", box1_r_indexes.size )
-            
-            if(box1_r_indexes.size > 1):
-
-                for box1_r_index in box1_r_indexes:
-
-                    box1_r = box_coordinates[box1_r_index]
-                    print("box1:", box1)
-                    print("right box1:", box1_r)
-                    box1 = self.getExtendedBoxCoordinates(box1, box1_r)
-                    print("new box1:", box1)
-                    
-            else:
-
-                box1_r = box_coordinates[box1_r_indexes]
-                print("box1:", box1)
-                print("right box1:", box1_r)
-                new_box1 = self.getExtendedBoxCoordinates(box1, box1_r)
-                print("new box1:", box1)
-            
-            if(self.draw_line):
-                mg = self.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box1_r_neighbours, img)
-
-        
-        if(len(box2_r_neighbours[0])):
-            
-            box_index = 1
-            box2_r_indexes = np.squeeze(box2_r_neighbours)
-            
-            if(box2_r_indexes.size>1):
-
-                for box2_r_index in box2_r_indexes:
-                    box2_r = box_coordinates[box2_r_index]
-                    print("box2:", box2)
-                    print("right box2:",box2_r)
-                    box2 = self.getExtendedBoxCoordinates(box2, box2_r)
-                    print("new box2:", box2)
-            else:
-
-                box2_r = box_coordinates[box2_r_indexes]
-                print("box2:", box2)
-                print("right box2:",box2_r)
-                box2 = self.getExtendedBoxCoordinates(box2, box2_r)        
-                print("new box2:", box2)
-                
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box2_r_neighbours, img)
-
-        
-        if(box3_r_neighbours[0].size):
-            
-            box_index = 2
-            box3_r_indexes = np.squeeze(box3_r_neighbours)
-            
-            if(box3_r_indexes.size > 1):
-                for box3_r_index in box3_r_indexes:
-                    box3_r = box_coordinates[box3_r_index]
-                    print("box3:", box3)
-                    print("right box3:",box3_r)
-                    box3 = self.getExtendedBoxCoordinates(box3, box3_r)
-                    print("new box3:", box3)
-            else:
-                box3_r = box_coordinates[box3_r_indexes]
-                print("box3:", box3)
-                print("right box3:",box3_r)
-                box3 = self.getExtendedBoxCoordinates(box3, box3_r)  
-                print("new box3:", box3)              
-
-            
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box3_r_neighbours, img)
-            
-
-        if(box4_r_neighbours[0].size):
-            box_index = 3
-            box4_r_indexes = np.squeeze(box4_r_neighbours)
-            
-            if(box4_r_indexes.size > 1):
-                for box4_r_index in box4_r_indexes:
-                    box4_r = box_coordinates[box4_r_index]
-
-                    print("box4:", box4)
-                    print("right box4:",box4_r)
-                    box4 = self.getExtendedBoxCoordinates(box4, box4_r)
-
-                    print("new box4:", box4)
-            else:
-                box4_r = box_coordinates[box4_r_indexes]
-                print("box4:", box4)
-                print("right box4:",box4_r)
-                box4 = self.getExtendedBoxCoordinates(box4, box4_r)
-                print("new box4:", box4)
-
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, right_centers, left_centers_box_full, box4_r_neighbours, img)
-                
-
         box1_l_neighbours = np.where(np.all(left_centers_distance1>0, axis=1 ) & np.all(left_centers_distance1 < [self.DISTANCE_THRESH], axis=1))
         box2_l_neighbours = np.where(np.all(left_centers_distance2>0, axis=1 ) & np.all(left_centers_distance2 < [self.DISTANCE_THRESH], axis=1))
         box3_l_neighbours = np.where(np.all(left_centers_distance3>0, axis=1 ) & np.all(left_centers_distance3 < [self.DISTANCE_THRESH], axis=1))
         box4_l_neighbours = np.where(np.all(left_centers_distance4>0, axis=1 ) & np.all(left_centers_distance4 < [self.DISTANCE_THRESH], axis=1))
 
+
+        box_right_neighbours = {}
+        box_left_neighbours = {}
+
+        if(box1_r_neighbours[0].size):
+            box_right_neighbours["box1"] = (box1, box_coordinates[np.squeeze(box1_r_neighbours)])
+        if(box2_r_neighbours[0].size):
+            box_right_neighbours["box2"] = (box2, box_coordinates[np.squeeze(box2_r_neighbours)])
+        if(box3_r_neighbours[0].size):
+            box_right_neighbours["box3"] = (box3, box_coordinates[np.squeeze(box3_r_neighbours)])
+        if(box4_r_neighbours[0].size):
+            box_right_neighbours["box4"] = (box4, box_coordinates[np.squeeze(box4_r_neighbours)])
+
         if(box1_l_neighbours[0].size):
-            
-            box_index = 0
-            box1_l_indexes = np.squeeze(box1_l_neighbours)
-
-            if(box1_l_indexes.size > 1):
-                for box1_l_index in box1_l_indexes:
-                    box1_l = box_coordinates[box1_l_index]
-                    
-                    print("box1:", box1)
-                    print("left box1:", box1_l)
-                    box1 = self.getExtendedBoxCoordinates(box1, box1_l)
-
-                    print("new box1:", box1)
-            else:
-
-                box1_l = box_coordinates[box1_l_indexes]
-                print("box1:", box1)
-                print("left box1:", box1_l)
-                box1 = self.getExtendedBoxCoordinates(box1, box1_l)
-                print("new box1:", box1)                
-
-            
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box1_l_neighbours, img)
-            
-
+            box_left_neighbours["box1"] = (box1, box_coordinates[np.squeeze(box1_l_neighbours)])
         if(box2_l_neighbours[0].size):
-            
-            box_index = 1
-            box2_l_indexes = np.squeeze(box2_l_neighbours)
-            
-            if(box2_l_indexes.size > 1):
-                for box2_l_index in box2_l_indexes:
-                    box2_l = box_coordinates[box2_l_index]
-                    print("box2:", box2)
-                    print("left box2:", box1_l)
-                    new_box2 = self.getExtendedBoxCoordinates(box2, box2_l)
-                    print("new box2:", new_box2)
-            else:
-                box2_l = box_coordinates[box2_l_indexes]
-                print("box2:", box2)
-                print("left box2:", box1_l)
-                box2 = self.getExtendedBoxCoordinates(box2, box2_l)
-                print("new box2:", box2)                
-            
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box2_l_neighbours, img)
-            
-
+            box_left_neighbours["box2"] = (box2, box_coordinates[np.squeeze(box2_l_neighbours)])
         if(box3_l_neighbours[0].size):
-            
-            box_index = 2
-            box3_l_indexes = np.squeeze(box3_l_neighbours)
-            if(box3_l_indexes.size > 1):
-                for box3_l_index in box3_l_indexes:
-                    box3_l = box_coordinates[box3_l_index]
-                    print("box3:", box3)
-                    print("left box3:", box3_l)
-                    box3 = self.getExtendedBoxCoordinates(box3, box3_l)
-                    print("new box3:", box3)
-            else:
-                
-                box3_l = box_coordinates[box3_l_indexes]
-                print("box3:", box3)
-                print("left box3:", box3_l)
-                box3 = self.getExtendedBoxCoordinates(box3, box3_l)
-                print("new box3:", box3)                
-
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box3_l_neighbours, img)
-
+            box_left_neighbours["box3"] = (box3, box_coordinates[np.squeeze(box3_l_neighbours)])
         if(box4_l_neighbours[0].size):
-            
-            box_index = 3
-            box4_l_indexes = np.squeeze(box4_l_neighbours)
-            if(box4_l_indexes.size > 1):
-                for box4_l_index in box4_l_indexes:
+            box_left_neighbours["box4"] = (box4, box_coordinates[np.squeeze(box4_l_neighbours)])
+                       
+        self.updateBoxCoordinates( box_right_neighbours, box_left_neighbours)
 
-                    box4_l = box_coordinates[box4_l_index]
-                    print("box4:", box4)
-                    print("left box4:", box4_l)
-                    box4 = self.getExtendedBoxCoordinates(box4, box4_l)
-                    print("new box4:", box4)
-            else:
-                box4_l = box_coordinates[box4_l_indexes]
-                print("box4:", box4)
-                print("left box4:", box4_l)
-                box4 = self.getExtendedBoxCoordinates(box4, box4_l)
-                print("new box4:", box4)                
+        return np.asarray([target_box_cordinates["box1"], target_box_cordinates["box2"], target_box_cordinates["box3"], target_box_cordinates["box4"]])
 
-            if(self.draw_line):
-                img = self.drawlineBetweenBox(box_index, left_centers, right_centers_box_full, box4_l_neighbours, img)
-            
+    def updateBoxCoordinates(self,  box_right_neighbours, box_left_neighbours):
+        
+        new_box = self.getTargetBoxCordinates()
+        
+        print("old box cordinates:", new_box)
+        
+        for box_name, box_indx in box_right_neighbours.items():
 
-        return np.asarray([box1, box2, box3, box4])
+            new_box[box_name] = self.getExtendedBoxCoordinates(box_indx[0], box_indx[1])
+        
+        for box_name, box_indx in box_left_neighbours.items():
 
-
+            new_box[box_name] = self.getExtendedBoxCoordinates(box_indx[0], box_indx[1])
+        
+        print("new box cordinates:", new_box)
+    
     def getExtendedBoxCoordinates(self, box, box_r_or_l):
         """
         box : original box cordinate (x, w, y, h)
@@ -311,13 +171,22 @@ class NearestBox:
 
         return type extended box cordinate
         """
-        #assert len(box_r_or_l) == 4
-        
+        print("box_r_or_l.size:", box_r_or_l.size)
         new_box = np.zeros_like(box)
-        new_box[0] = box[0] if(box[0] < box_r_or_l[0]) else box_r_or_l[0]
-        new_box[1] = box_r_or_l[1] + box[1]  + self.DISTANCE_THRESH
-        new_box[2] = box[2]
-        new_box[3] = box[3] if(box[3] > box_r_or_l[3]) else box_r_or_l[3]
+
+        if(box_r_or_l.size <= 4):
+            
+            new_box[0] = box[0] if(box[0] < box_r_or_l[0]) else box_r_or_l[0]
+            new_box[1] = box_r_or_l[1] + box[1]  + self.DISTANCE_THRESH
+            new_box[2] = box[2]
+            new_box[3] = box[3] if(box[3] > box_r_or_l[3]) else box_r_or_l[3]
+        
+        else:
+            for bx_rl in box_r_or_l:
+                new_box[0] = box[0] if(box[0] < bx_rl[0]) else bx_rl[0]
+                new_box[1] = bx_rl[1] + box[1]  + self.DISTANCE_THRESH
+                new_box[2] = box[2]
+                new_box[3] = box[3] if(box[3] > bx_rl[3]) else bx_rl[3]
         
         return new_box
     
@@ -327,5 +196,5 @@ class NearestBox:
         box2_neighbour_indexes = np.squeeze(box2_r_neighbours)
         end_point = int(left_centers_box_full[box2_neighbour_indexes][0]), int(left_centers_box_full[box2_neighbour_indexes][1])
 
-        return cv2.line(img, end_point,start_point,  (0,255,0), 3)
+        return cv2.line(img, end_point, start_point,  (0,255,0), 3)
 
