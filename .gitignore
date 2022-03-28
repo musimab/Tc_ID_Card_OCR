@@ -3,10 +3,8 @@
 *.pkl
 *.pth
 result*
-model*
 output*
 craft*
-images*
 __pycache__*
 tc*
 *.json
