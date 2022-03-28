@@ -3,12 +3,14 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 import utlis
+import torch
 from find_nearest_box import NearestBox
 from pytorch_unet.unet_predict import UnetModel
 from extract_words import Image2Text
 import os
 from detect_face import FindFaceID
 import time
+import argparse
 
 def getCenterRatios(img, centers):
     """
@@ -128,12 +130,21 @@ def getBoxRegions(regions):
 
 if '__main__' == __name__:
     
-    Folder = "img"
-    ORI_THRESH = 3
+    parser = argparse.ArgumentParser(description='Identity Card Information Extractiion')
+    parser.add_argument('--folder_name', default="img", type=str, help='folder that contain tc id images')
+    parser.add_argument('--neighbor_box_distance', default=50,type=float, help='Nearest box distance threshold')
+    parser.add_argument('--face_recognition', default="ssd", type=str, help='face detection algorithm')
+    parser.add_argument('--rotation_interval', default=30,type=int, help='Face search interval for rotation matrix')
+    args = parser.parse_args()
+    
+    Folder = args.folder_name # identity card images folder
+    ORI_THRESH = 3 # Orientation angle threshold for skew correction
+    
+    use_cuda = "cuda" if torch.cuda.is_available() else "cpu"
+    model = UnetModel("resnet34", use_cuda)
+    nearestBox = NearestBox(distance_thresh = args.neighbor_box_distance, draw_line=False)
+    findFaceID = FindFaceID(detection_method = args.face_recognition, rot_interval= args.rotation_interval)
 
-    model = UnetModel("resnet34", "cuda")
-    nearestBox = NearestBox(distance_thresh = 50, draw_line=False)
-    findFaceID = FindFaceID(detection_method = "ssd", rot_interval= 30)
     
     start = time.time()
 

@@ -1,5 +1,19 @@
 # Usage
+### Arguments
+* `--folder_name`: folder path
+* `--neighbor_box_distance`: Nearest box distance 
+* `--face_recognition`: Face recognition method 
+* `--rotation_interval`: Id card rotation interval in degrees
 
+``` 
+python3 main.py --folder_name "img" --neighbor_box_distance 60 --face_recognition ssd --rotation_interval 60
+```
+
+```
+pip install -r requirements.txt
+```
+
+The result image and json files will be saved to `./outputs` by default.
 ## TODOs
 1. deep learning based (Yolo SSD Faster Rcnn) identity card recognition model will be developed
 
