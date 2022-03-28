@@ -5,6 +5,11 @@
 * `--face_recognition`: Face recognition method 
 * `--rotation_interval`: Id card rotation interval in degrees
 
+Create a folder and put the ID card images in that folder
+``` 
+mkdir src
+``` 
+
 ``` 
 python3 main.py --folder_name "img" --neighbor_box_distance 60 --face_recognition ssd --rotation_interval 60
 ```
@@ -15,7 +20,9 @@ pip install craft-text-detector
 pip install easyocr
 ```
 
-The result image and json files will be saved to `./outputs` by default.
+The result image and cropped regions will be saved to `./outputs` by default.
+The json data will be saved to `./test` by default.
+
 ## TODOs
 1. deep learning based (Yolo SSD Faster Rcnn) identity card recognition model will be developed
 
