@@ -10,7 +10,9 @@ python3 main.py --folder_name "img" --neighbor_box_distance 60 --face_recognitio
 ```
 
 ```
-pip install -r requirements.txt
+pip install opencv-python-headless==4.5.3.56
+pip install craft-text-detector
+pip install easyocr
 ```
 
 The result image and json files will be saved to `./outputs` by default.

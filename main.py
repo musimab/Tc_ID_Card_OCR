@@ -130,11 +130,11 @@ def getBoxRegions(regions):
 
 if '__main__' == __name__:
     
-    parser = argparse.ArgumentParser(description='Identity Card Information Extractiion')
+    parser = argparse.ArgumentParser(description = 'Identity Card Information Extractiion')
     parser.add_argument('--folder_name', default="img", type=str, help='folder that contain tc id images')
-    parser.add_argument('--neighbor_box_distance', default=50,type=float, help='Nearest box distance threshold')
-    parser.add_argument('--face_recognition', default="ssd", type=str, help='face detection algorithm')
-    parser.add_argument('--rotation_interval', default=30,type=int, help='Face search interval for rotation matrix')
+    parser.add_argument('--neighbor_box_distance', default=50, type = float, help='Nearest box distance threshold')
+    parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
+    parser.add_argument('--rotation_interval', default = 30,   type = int, help='Face search interval for rotation matrix')
     args = parser.parse_args()
     
     Folder = args.folder_name # identity card images folder
@@ -156,16 +156,12 @@ if '__main__' == __name__:
         final_img = findFaceID.changeOrientationUntilFaceFound(img1)
         
         final_img = utlis.correctPerspective(final_img)
-        plt.imsave("crop_img.jpg", final_img)
     
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
-        #plt.imsave("txt_heat_map.jpg",txt_heat_map)
-        cv2.imwrite("txt_heat_map.jpg", txt_heat_map)
         
         txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
         
         predicted_mask = model.predict(txt_heat_map)
-        plt.imsave("mask_first.jpg", predicted_mask)
 
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
         print("orientation_angle is ", orientation_angle)
@@ -209,7 +205,7 @@ if '__main__' == __name__:
       
         plt.title("final_img")
         plt.imshow(final_img)
-        plt.imsave("final_imgp.jpg",final_img)
+        #plt.imsave("final_imgp.jpg",final_img)
         #cv2.imwrite("predicted_mask.jpg", predicted_mask)
         plt.show()
     

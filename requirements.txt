@@ -1,0 +1,5 @@
+torch==1.11.0+cu102
+torchvision==0.2.1
+opencv-python==4.5.3
+numpy == 1.22.3
+craft-text-detector == 0.4.2
