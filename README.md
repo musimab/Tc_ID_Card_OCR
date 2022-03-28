@@ -7,11 +7,11 @@
 
 Create a folder and put the ID card images in that folder
 ``` 
-mkdir src
+mkdir images
 ``` 
 
 ``` 
-python3 main.py --folder_name "img" --neighbor_box_distance 60 --face_recognition ssd --rotation_interval 60
+python3 main.py --folder_name "images" --neighbor_box_distance 60 --face_recognition ssd --rotation_interval 60
 ```
 
 ```

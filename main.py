@@ -131,7 +131,7 @@ def getBoxRegions(regions):
 if '__main__' == __name__:
     
     parser = argparse.ArgumentParser(description = 'Identity Card Information Extractiion')
-    parser.add_argument('--folder_name', default="img", type=str, help='folder that contain tc id images')
+    parser.add_argument('--folder_name', default="images", type=str, help='folder that contain tc id images')
     parser.add_argument('--neighbor_box_distance', default=50, type = float, help='Nearest box distance threshold')
     parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
     parser.add_argument('--rotation_interval', default = 30,   type = int, help='Face search interval for rotation matrix')
