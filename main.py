@@ -164,11 +164,11 @@ if '__main__' == __name__:
         predicted_mask = model.predict(txt_heat_map)
 
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
-        print("orientation_angle is ", orientation_angle)
+        print("Orientation of Tc ID Card is {} ".format(orientation_angle))
         
         if ( abs(orientation_angle) > ORI_THRESH ):
             
-            print("absulute orientation_angle is greater than {}".format(ORI_THRESH)  )
+            print("Absulute orientation_angle is greater than {}".format(ORI_THRESH)  )
 
             final_img = utlis.rotateImage(orientation_angle, final_img)
 

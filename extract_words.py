@@ -68,14 +68,11 @@ class Image2Text():
         if(self.ocr_method == "Tesseract"):
             ocr_output = self.tesserctOcr(img, bbox)
         
-        elif (self.ocr_method == "Keras"):
-            ocr_output = self.kerasOcr(img, bbox)
-       
         elif (self.ocr_method == "Easy"):
             ocr_output = self.easyOcr(img, bbox)
         
         else:
-            print("Select Keras Easy or Tesseract")
+            print("Select Easy or Tesseract")
             return
         
         return ocr_output
@@ -93,6 +90,8 @@ class Image2Text():
                 crop_img = self.denoiseImage(crop_img)
             
             self.crop_img.append(crop_img)
+            if not os.path.exists("outputs/target_crops/"):
+                os.makedirs("outputs/target_crops/")
             crop_name = "outputs/target_crops/" + str(info) +".jpg"
             plt.imsave(crop_name,crop_img)
             self.crop_img_names.append(crop_name)
@@ -129,27 +128,7 @@ class Image2Text():
 
         return TesseractOcrInfo
 
-    """
-    def kerasOcr(self,img, bbox):
-       
-        self.cropRoi(img, bbox)
-        
-        images = [keras_ocr.tools.read(img) for img in self.crop_img_names]
-    
-        prediction_groups = self.pipeline.recognize(images)
-        for info, img_region in zip(KerasOcrInfo, prediction_groups):
-            new_text = ""
-            if(len(img_region) == 1):
-                for text, box in img_region:
-                    KerasOcrInfo[info] = text
-            else:
-                for text, box in img_region:
-                    new_text = text + new_text
-                KerasOcrInfo[info] = new_text
 
-        return KerasOcrInfo 
-    
-    """
     def denoiseImage(self, img):
         """
         if denoise is available make denosing
