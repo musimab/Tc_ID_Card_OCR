@@ -1,7 +1,7 @@
 *.pyc
 *.swp
 *.pkl
-*.pth
+
 result*
 output*
 craft*
