@@ -7,6 +7,7 @@
 
 Create a folder and put the ID card images in that folder
 ``` 
+git clone git@github.com:musimab/Tc_ID_Card_OCR.git
 mkdir images
 ``` 
 

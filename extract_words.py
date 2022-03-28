@@ -17,7 +17,7 @@ CardInfo = {}
 EasyOcrInfo = {}
 
 
-class SaveOcrInfo:
+class JsonData:
 
     def __init__(self) -> None:
         
@@ -42,7 +42,7 @@ class SaveOcrInfo:
 
 class Image2Text():
     """
-    There are 3 types of ocr methods. 
+    There are 2 types of ocr methods. 
     Retrieves original image and target box coordinates 
     (id no, first name, last name, date of birth) 
     and saves txt outputs in json format
@@ -56,10 +56,8 @@ class Image2Text():
         self.img_name = file_name
         self.crop_img = list()
         self.crop_img_names = []
-        #self.pipeline = keras_ocr.pipeline.Pipeline()
         self.reader = easyocr.Reader(['tr','en'])
 
-        self.IdCardInfo = SaveOcrInfo()
     
     def ocrOutput(self, img, bbox):
         
@@ -103,20 +101,19 @@ class Image2Text():
         """
         self.cropRoi(img, bbox)
         id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
-        saveOcrInfo = SaveOcrInfo()
+        jsonData = JsonData()
         for info, img  in zip(id_infos, self.crop_img_names):
             result = self.reader.readtext(img)
             if(len(result)):
                 box, text, prob = result[0]
-                saveOcrInfo.EasyOcrInfo[info] = text.upper()
+                jsonData.EasyOcrInfo[info] = text.upper()
         
-        saveOcrInfo.EasyOcrInfo["DateofBirth"] = self.getonlyDigits(saveOcrInfo.EasyOcrInfo["DateofBirth"])
+        jsonData.EasyOcrInfo["DateofBirth"] = self.getonlyDigits(jsonData.EasyOcrInfo["DateofBirth"])
        
-        CardInfo[self.img_name] = saveOcrInfo.EasyOcrInfo
-        saveOcrInfo.saveDict(CardInfo)
+        CardInfo[self.img_name] =    jsonData.EasyOcrInfo
+        jsonData.saveDict(CardInfo)
         
-        
-        return saveOcrInfo.EasyOcrInfo
+        return jsonData.EasyOcrInfo
 
 
     def tesserctOcr(self,img, bbox):
