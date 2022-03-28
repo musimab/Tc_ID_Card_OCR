@@ -14,7 +14,7 @@ class FindFaceID:
         self.method  = detection_method
         self.rot_interval = rot_interval
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+        self.predictor = dlib.shape_predictor("model/shape_predictor_68_face_landmarks.dat")
         self.modelFile = "model/res10_300x300_ssd_iter_140000.caffemodel"
         self.configFile = "model/deploy.prototxt.txt"
         self.FaceNet = cv2.dnn.readNetFromCaffe(self.configFile, self.modelFile)

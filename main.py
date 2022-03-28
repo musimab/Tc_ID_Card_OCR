@@ -128,13 +128,12 @@ def getBoxRegions(regions):
 
 if '__main__' == __name__:
     
-    Folder = "deneme_testr"
+    Folder = "img"
     ORI_THRESH = 3
 
     model = UnetModel("resnet34", "cuda")
     nearestBox = NearestBox(distance_thresh = 50, draw_line=False)
     findFaceID = FindFaceID(detection_method = "ssd", rot_interval= 30)
-    
     
     start = time.time()
 
@@ -203,7 +202,7 @@ if '__main__' == __name__:
         #cv2.imwrite("predicted_mask.jpg", predicted_mask)
         plt.show()
     
-       
+        
         plt.title("Predicted Mask")
         plt.imshow(predicted_mask, cmap='gray')
         #plt.imsave("predicted_mask.jpg", predicted_mask)
