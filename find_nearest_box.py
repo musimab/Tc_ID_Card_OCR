@@ -152,7 +152,7 @@ class NearestBox:
         
         new_box = self.getTargetBoxCordinates()
         
-        print("old box cordinates:", new_box)
+        #print("old box cordinates:", new_box)
         
         for box_name, box_indx in box_right_neighbours.items():
 
@@ -162,7 +162,7 @@ class NearestBox:
 
             new_box[box_name] = self.getExtendedBoxCoordinates(box_indx[0], box_indx[1])
         
-        print("new box cordinates:", new_box)
+        #print("new box cordinates:", new_box)
     
     def getExtendedBoxCoordinates(self, box, box_r_or_l):
         """
