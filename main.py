@@ -205,15 +205,15 @@ if '__main__' == __name__:
       
         plt.title("final_img")
         plt.imshow(final_img)
-        #plt.imsave("final_imgp.jpg",final_img)
-        #cv2.imwrite("predicted_mask.jpg", predicted_mask)
+        plt.imsave("final_imgp.jpg",final_img)
+        #cv2.imwrite("predicted_mask.jpg", final_img)
         plt.show()
     
         
         plt.title("Predicted Mask")
         plt.imshow(predicted_mask, cmap='gray')
         #plt.imsave("predicted_mask.jpg", predicted_mask)
-        cv2.imwrite("predicted_mask.jpg", predicted_mask)
+        #cv2.imwrite("predicted_mask.jpg", predicted_mask)
         plt.show()
     
     end = time.time()
