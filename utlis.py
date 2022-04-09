@@ -150,21 +150,21 @@ def correctPerspective(img):
     
     warped_img = warpImg(img, approx ,  width_q, heigth_q)
     
-    plt.title("original image")
-    plt.imshow(img)
-    plt.show()
-    plt.imsave("ori_img.jpg", img)
+    #plt.title("original image")
+    #plt.imshow(img)
+    #plt.show()
+    #plt.imsave("ori_img.jpg", img)
 
     
-    plt.title("processed image")
-    plt.imshow(img_erosion)
-    plt.show()
-    plt.imsave("img_erosion.jpg", img_erosion)
+    #plt.title("processed image")
+    #plt.imshow(img_erosion)
+    #plt.show()
+    #plt.imsave("img_erosion.jpg", img_erosion)
 
-    plt.title("warped image")
-    plt.imshow(warped_img)
-    plt.show()
-    plt.imsave("warped_img.jpg", warped_img)
+    #plt.title("warped image")
+    #plt.imshow(warped_img)
+    #plt.show()
+    #plt.imsave("warped_img.jpg", warped_img)
 
 
     return warped_img

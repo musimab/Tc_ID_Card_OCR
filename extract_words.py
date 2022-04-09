@@ -52,21 +52,50 @@ class EasyOcr:
         it saves the txt outputs as a json format
         """
         crop_img_names = cropRoi(img, bbox, self.denoise)
+        print("crop img names:", crop_img_names)
         id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
         jsonData = JsonData()
-        
+        text_output = {"Tc":"", "Surname":"", "Name":"", "DateofBirth":""}
         for info, img  in zip(id_infos, crop_img_names):
             result = self.reader.readtext(img)
             if(len(result)):
                 box, text, prob = result[0]
-                jsonData.text_output[info] = text.upper()
-                jsonData.text_output["DateofBirth"] = getonlyDigits(jsonData.text_output["DateofBirth"])
+                text_output[info] = text.upper()
+        
+        text_output["DateofBirth"] = getonlyDigits(text_output["DateofBirth"])
        
-        CardInfo[img_name] = jsonData.text_output
+        CardInfo[img_name] = text_output
         jsonData.saveDict(CardInfo)
         
-        return jsonData.text_output 
+        return text_output 
 
+class TesseractOcr:
+    
+    def __init__(self, border_thresh, denoise,) -> None:
+        self.denoise = denoise
+        self.BORDER_THRSH = border_thresh
+        
+    
+    
+    def ocrOutput(self, img_name, img, bbox):
+        """
+        it saves the txt outputs as a json format
+        """
+        crop_img_names = cropRoi(img, bbox, self.denoise)
+        id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
+        jsonData = JsonData()        
+        text_output = {"Tc":"", "Surname":"", "Name":"", "DateofBirth":""}
+        for info, img  in zip(id_infos, crop_img_names):
+            text = pytesseract.image_to_string(img)
+            
+            text_output[info] = text.upper()
+        
+        text_output["DateofBirth"] = getonlyDigits(text_output["DateofBirth"])
+       
+        CardInfo[img_name] = text_output
+        jsonData.saveDict(CardInfo)
+        
+        return text_output
 
 def cropRoi(img, bbox, denoise):
        
@@ -84,9 +113,9 @@ def cropRoi(img, bbox, denoise):
             
         if not os.path.exists("outputs/target_crops/"):
             os.makedirs("outputs/target_crops/")
-            crop_name = "outputs/target_crops/" + str(info) +".jpg"
-            plt.imsave(crop_name, crop_img)
-            crop_img_names.append(crop_name) 
+        crop_name = "outputs/target_crops/" + str(info) +".jpg"
+        plt.imsave(crop_name, crop_img)
+        crop_img_names.append(crop_name) 
 
     return crop_img_names
     
@@ -116,32 +145,7 @@ def denoiseImage(img):
 
 
 
-class TesseractOcr:
-    
-    def __init__(self, border_thresh, denoise,) -> None:
-        self.denoise = denoise
-        self.BORDER_THRSH = border_thresh
-    
-    
-    def ocrOutput(self, img_name, img, bbox):
-        """
-        it saves the txt outputs as a json format
-        """
-        crop_img_names = cropRoi(img, bbox, self.denoise)
-        id_infos= ["Tc", "Surname", "Name", "DateofBirth"]
-        jsonData = JsonData()        
-        
-        for info, img  in zip(id_infos, crop_img_names):
-            text = pytesseract.image_to_string(img)
-            
-            jsonData.text_output[info] = text.upper()
-        
-            jsonData.text_output["DateofBirth"] = getonlyDigits(jsonData.text_output["DateofBirth"])
-       
-        CardInfo[img_name] = jsonData.text_output
-        jsonData.saveDict(CardInfo)
-        
-        return jsonData.text_output
+
 
 def factory(ocr_method = "EasyOcr", border_thresh = 3, denoise = False):
     ocr_factory = {"EasyOcr": EasyOcr,

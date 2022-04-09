@@ -205,7 +205,7 @@ if '__main__' == __name__:
       
         plt.title("final_img")
         plt.imshow(final_img)
-        plt.imsave("final_imgp.jpg",final_img)
+        #plt.imsave("final_imgp.jpg",final_img)
         #cv2.imwrite("predicted_mask.jpg", final_img)
         plt.show()
     
