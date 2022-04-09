@@ -6,7 +6,8 @@ import utlis
 import torch
 from find_nearest_box import NearestBox
 from pytorch_unet.unet_predict import UnetModel
-from extract_words import Image2Text
+#from extract_words import Image2Text
+import extract_words
 import os
 from detect_face import FindFaceID
 import time
@@ -132,9 +133,9 @@ if '__main__' == __name__:
     
     parser = argparse.ArgumentParser(description = 'Identity Card Information Extractiion')
     parser.add_argument('--folder_name', default="images", type=str, help='folder that contain tc id images')
-    parser.add_argument('--neighbor_box_distance', default=50, type = float, help='Nearest box distance threshold')
+    parser.add_argument('--neighbor_box_distance', default = 50, type = float, help='Nearest box distance threshold')
     parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
-    parser.add_argument('--rotation_interval', default = 30,   type = int, help='Face search interval for rotation matrix')
+    parser.add_argument('--rotation_interval', default = 15,   type = int, help='Face search interval for rotation matrix')
     args = parser.parse_args()
     
     Folder = args.folder_name # identity card images folder
@@ -144,7 +145,7 @@ if '__main__' == __name__:
     model = UnetModel("resnet34", use_cuda)
     nearestBox = NearestBox(distance_thresh = args.neighbor_box_distance, draw_line=False)
     findFaceID = FindFaceID(detection_method = args.face_recognition, rot_interval= args.rotation_interval)
-
+    Image2Text = extract_words.factory(ocr_method="EasyOcr", border_thresh=3, denoise = False)
     
     start = time.time()
 
@@ -160,7 +161,7 @@ if '__main__' == __name__:
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
         
         txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
-        
+        plt.imsave("txt_heat_map .jpg",txt_heat_map)
         predicted_mask = model.predict(txt_heat_map)
 
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
@@ -191,9 +192,8 @@ if '__main__' == __name__:
         
         new_bboxes = nearestBox.searchNearestBoundingBoxes(bbox_coordinates, matched_box_indexes, final_img)
        
-        ocrResult = Image2Text(ocr_method="Easy", lw_thresh = 5, up_thresh= 5, denoising=False, file_name=filename)
+        PersonInfo = Image2Text.ocrOutput(filename, final_img, new_bboxes)
         
-        PersonInfo = ocrResult.ocrOutput(final_img, new_bboxes)
         print(" ")
         for id, val in PersonInfo.items():
             print(id,':' ,val)
