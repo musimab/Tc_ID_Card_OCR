@@ -32,10 +32,10 @@ The json data will be saved to `./test` by default.
 ![ocr_pip_update1](https://user-images.githubusercontent.com/47300390/158075210-1ed286a2-f8ee-4007-b158-51fcc342add3.jpg)
 
 ## Input image
-![ori_img](https://user-images.githubusercontent.com/47300390/160566593-3ed44b00-5da6-4d9d-a445-30f8981526e9.jpg)
+![ori14_m2rot](https://user-images.githubusercontent.com/47300390/160571547-236fd7ed-bbf0-40f9-b01a-d8e9d2edfc11.jpg)
 
 ## Warped image
-![warped_img](https://user-images.githubusercontent.com/47300390/160566682-b75ce5c3-ee6f-4dc2-b671-17c8ca003a70.jpg)
+![warped_img](https://user-images.githubusercontent.com/47300390/160571705-44b19acb-920b-4c2e-b792-7983a8a35bff.jpg)
 
 
 ## CRAFT Character Density Map
