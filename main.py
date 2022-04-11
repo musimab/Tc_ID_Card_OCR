@@ -6,7 +6,7 @@ import utlis
 import torch
 from find_nearest_box import NearestBox
 from pytorch_unet.unet_predict import UnetModel
-#from extract_words import Image2Text
+from extract_words import OcrFactory
 import extract_words
 import os
 from detect_face import FindFaceID
@@ -145,7 +145,8 @@ if '__main__' == __name__:
     model = UnetModel("resnet34", use_cuda)
     nearestBox = NearestBox(distance_thresh = args.neighbor_box_distance, draw_line=False)
     findFaceID = FindFaceID(detection_method = args.face_recognition, rot_interval= args.rotation_interval)
-    Image2Text = extract_words.factory(ocr_method="EasyOcr", border_thresh=3, denoise = False)
+    Image2Text = extract_words.ocr_factory(ocr_method="EasyOcr", border_thresh=3, denoise = False)
+
     
     start = time.time()
 
