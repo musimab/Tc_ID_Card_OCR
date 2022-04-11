@@ -6,6 +6,7 @@
 * `--rotation_interval`: Id card rotation interval in degrees
 * `--ocr_method`: ocr method (EasyOcr and TesseractOcr)
 
+In Dlib and Haar face detection model, it is better to choose a rotation angle of less than 30 degrees, otherwise no face may be detected due to image inversion.
 Create a folder and put the ID card images in that folder
 ``` 
 git clone git@github.com:musimab/Tc_ID_Card_OCR.git

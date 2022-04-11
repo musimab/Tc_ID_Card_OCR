@@ -136,7 +136,7 @@ if '__main__' == __name__:
     parser.add_argument('--neighbor_box_distance', default = 50, type = float, help='Nearest box distance threshold')
     parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
     parser.add_argument('--ocr_method',  default = "EasyOcr", type = str,   help='Type of ocr method for converting images to text')
-    parser.add_argument('--rotation_interval', default = 60,   type = int, help='Face search interval for rotation matrix')
+    parser.add_argument('--rotation_interval', default = 15,   type = int, help='Face search interval for rotation matrix')
     args = parser.parse_args()
     
     Folder = args.folder_name # identity card images folder
@@ -160,6 +160,10 @@ if '__main__' == __name__:
   
         final_img = findFaceID.changeOrientationUntilFaceFound(img1, args.rotation_interval)
         
+        if(final_img is None):
+            print(f"No face detected in identity card {filename}")
+            break
+
         final_img = utlis.correctPerspective(final_img)
     
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
