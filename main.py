@@ -9,9 +9,9 @@ from pytorch_unet.unet_predict import UnetModel
 from extract_words import OcrFactory
 import extract_words
 import os
-from detect_face import FindFaceID
 import time
 import argparse
+import detect_face
 
 def getCenterRatios(img, centers):
     """
@@ -134,18 +134,21 @@ if '__main__' == __name__:
     parser = argparse.ArgumentParser(description = 'Identity Card Information Extractiion')
     parser.add_argument('--folder_name', default="images", type=str, help='folder that contain tc id images')
     parser.add_argument('--neighbor_box_distance', default = 50, type = float, help='Nearest box distance threshold')
-    parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
-    parser.add_argument('--rotation_interval', default = 15,   type = int, help='Face search interval for rotation matrix')
+    parser.add_argument('--face_recognition',  default = "haar", type = str,   help='face detection algorithm')
+    parser.add_argument('--ocr_method',  default = "EasyOcr", type = str,   help='Type of ocr method for converting images to text')
+    parser.add_argument('--rotation_interval', default = 60,   type = int, help='Face search interval for rotation matrix')
     args = parser.parse_args()
     
     Folder = args.folder_name # identity card images folder
     ORI_THRESH = 3 # Orientation angle threshold for skew correction
     
     use_cuda = "cuda" if torch.cuda.is_available() else "cpu"
+    
     model = UnetModel("resnet34", use_cuda)
     nearestBox = NearestBox(distance_thresh = args.neighbor_box_distance, draw_line=False)
-    findFaceID = FindFaceID(detection_method = args.face_recognition, rot_interval= args.rotation_interval)
-    Image2Text = extract_words.ocr_factory(ocr_method="EasyOcr", border_thresh=3, denoise = False)
+    face_detector = detect_face.face_factory(face_model = args.face_recognition)
+    findFaceID = face_detector.get_face_detector()
+    Image2Text = extract_words.ocr_factory(ocr_method = args.ocr_method, border_thresh=3, denoise = False)
 
     
     start = time.time()
@@ -155,7 +158,7 @@ if '__main__' == __name__:
         img = cv2.imread(os.path.join(Folder,filename))
         img1 = cv2.cvtColor(img , cv2.COLOR_BGR2RGB)
   
-        final_img = findFaceID.changeOrientationUntilFaceFound(img1)
+        final_img = findFaceID.changeOrientationUntilFaceFound(img1, args.rotation_interval)
         
         final_img = utlis.correctPerspective(final_img)
     
