@@ -134,7 +134,7 @@ if '__main__' == __name__:
     parser = argparse.ArgumentParser(description = 'Identity Card Information Extractiion')
     parser.add_argument('--folder_name', default="images", type=str, help='folder that contain tc id images')
     parser.add_argument('--neighbor_box_distance', default = 50, type = float, help='Nearest box distance threshold')
-    parser.add_argument('--face_recognition',  default = "haar", type = str,   help='face detection algorithm')
+    parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
     parser.add_argument('--ocr_method',  default = "EasyOcr", type = str,   help='Type of ocr method for converting images to text')
     parser.add_argument('--rotation_interval', default = 60,   type = int, help='Face search interval for rotation matrix')
     args = parser.parse_args()
@@ -152,7 +152,7 @@ if '__main__' == __name__:
 
     
     start = time.time()
-
+    end = 0
     for filename in sorted(os.listdir(Folder)):
         
         img = cv2.imread(os.path.join(Folder,filename))
@@ -202,6 +202,7 @@ if '__main__' == __name__:
         for id, val in PersonInfo.items():
             print(id,':' ,val)
         print(" ")
+        end = time.time()
         utlis.displayMachedBoxes(final_img, new_bboxes)
         
         utlis.displayAllBoxes(final_img, bbox_coordinates)
@@ -220,7 +221,7 @@ if '__main__' == __name__:
         #cv2.imwrite("predicted_mask.jpg", predicted_mask)
         plt.show()
     
-    end = time.time()
+   
     print("Execution Time:", (end -start))
    
         
