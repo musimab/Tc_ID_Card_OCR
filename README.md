@@ -2,8 +2,9 @@
 ### Arguments
 * `--folder_name`: folder path
 * `--neighbor_box_distance`: Nearest box distance 
-* `--face_recognition`: Face recognition method 
+* `--face_recognition`: Face recognition method (dlib, ssd, haar)
 * `--rotation_interval`: Id card rotation interval in degrees
+* `--ocr_method`: ocr method (EasyOcr and TesseractOcr)
 
 Create a folder and put the ID card images in that folder
 ``` 
@@ -12,7 +13,7 @@ mkdir images
 ``` 
 
 ``` 
-python3 main.py --folder_name "images" --neighbor_box_distance 60 --face_recognition ssd --rotation_interval 60
+python3 main.py --folder_name "images" --neighbor_box_distance 60 --face_recognition ssd --ocr_method EasyOcr --rotation_interval 60
 ```
 
 ```
