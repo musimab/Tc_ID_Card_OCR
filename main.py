@@ -169,7 +169,7 @@ if '__main__' == __name__:
         txt_heat_map, regions = utlis.createHeatMapAndBoxCoordinates(final_img)
         
         txt_heat_map = cv2.cvtColor(txt_heat_map, cv2.COLOR_BGR2RGB)
-        plt.imsave("txt_heat_map .jpg",txt_heat_map)
+        
         predicted_mask = model.predict(txt_heat_map)
 
         orientation_angle = utlis.findOrientationofLines(predicted_mask.copy())
