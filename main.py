@@ -6,6 +6,7 @@ import utlis
 import torch
 from find_nearest_box import NearestBox
 from pytorch_unet.unet_predict import UnetModel
+from pytorch_unet.unet_predict import Res34BackBone
 from extract_words import OcrFactory
 import extract_words
 import os
@@ -136,7 +137,7 @@ if '__main__' == __name__:
     parser.add_argument('--neighbor_box_distance', default = 50, type = float, help='Nearest box distance threshold')
     parser.add_argument('--face_recognition',  default = "ssd", type = str,   help='face detection algorithm')
     parser.add_argument('--ocr_method',  default = "EasyOcr", type = str,   help='Type of ocr method for converting images to text')
-    parser.add_argument('--rotation_interval', default = 15,   type = int, help='Face search interval for rotation matrix')
+    parser.add_argument('--rotation_interval', default = 30,   type = int, help='Face search interval for rotation matrix')
     args = parser.parse_args()
     
     Folder = args.folder_name # identity card images folder
@@ -144,12 +145,12 @@ if '__main__' == __name__:
     
     use_cuda = "cuda" if torch.cuda.is_available() else "cpu"
     
-    model = UnetModel("resnet34", use_cuda)
+    model = UnetModel(Res34BackBone(), use_cuda)
     nearestBox = NearestBox(distance_thresh = args.neighbor_box_distance, draw_line=False)
     face_detector = detect_face.face_factory(face_model = args.face_recognition)
     findFaceID = face_detector.get_face_detector()
-    Image2Text = extract_words.ocr_factory(ocr_method = args.ocr_method, border_thresh=3, denoise = False)
-
+    #Image2Text = extract_words.ocr_factory(ocr_method = args.ocr_method, border_thresh=3, denoise = False)
+    Image2Text =  OcrFactory().select_ocr_method(ocr_method = args.ocr_method, border_thresh=3, denoise = False)
     
     start = time.time()
     end = 0
