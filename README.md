@@ -16,9 +16,17 @@ mkdir images
 ``` 
 python3 main.py --folder_name "images" --neighbor_box_distance 60 --face_recognition ssd --ocr_method EasyOcr --rotation_interval 60
 ```
+## create python3 virtual enviroment and install dependencies
+```
+python3 -m venv card_id_ocr_venv
+```
 
 ```
-pip install -r requirements.txt
+source card_id_ocr_venv/bin/activate
+```
+
+```
+pip3 install -r requirements.txt
 ```
 
 The result image and cropped regions will be saved to `./outputs` by default.
