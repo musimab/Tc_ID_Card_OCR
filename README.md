@@ -18,9 +18,7 @@ python3 main.py --folder_name "images" --neighbor_box_distance 60 --face_recogni
 ```
 
 ```
-pip install opencv-python-headless==4.5.3.56
-pip install craft-text-detector
-pip install easyocr
+pip install -r requirements.txt
 ```
 
 The result image and cropped regions will be saved to `./outputs` by default.
