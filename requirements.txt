@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 absl-py==1.0.0
 astunparse==1.6.3
 beautifulsoup4==4.10.0
@@ -87,3 +88,10 @@ validators==0.18.2
 Werkzeug==2.0.3
 wrapt==1.14.0
 zipp==3.7.0
+=======
+torch==1.13.1
+torchvision==0.2.1
+opencv-python==4.5.3
+numpy == 1.22.3
+craft-text-detector == 0.4.2
+>>>>>>> refs/remotes/origin/main
