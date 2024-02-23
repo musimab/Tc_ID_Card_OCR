@@ -32,6 +32,9 @@ pip3 install -r requirements.txt
 The result image and cropped regions will be saved to `./outputs` by default.
 The json data will be saved to `./test` by default.
 
+Finds all virtual envs in linux
+`locate -b '\activate' | grep "/home"`` 
+
 ## TODOs
 1. deep learning based (Yolo SSD Faster Rcnn) identity card recognition model will be developed
 
