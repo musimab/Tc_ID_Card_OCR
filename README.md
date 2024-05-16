@@ -88,3 +88,6 @@ The evaluate.py function retrieves the predicted and actual values in json forma
 
 ### Easy Ocr
 https://github.com/sarra831/EasyOCR
+
+### For Support
+If you want to support my work, you can buy me a coffee at https://www.buymeacoffee.com/mustafaboyuk
